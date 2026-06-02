@@ -330,7 +330,7 @@
                     <a href="#" class="forgot-link">Lupa Password?</a>
                 </div>
 
-                <button type="button" class="btn btn-primary">Masuk</button>
+                <a href="{{ url('/dashboard') }}" class="btn btn-primary" style="display: block; line-height: normal;">Masuk</a>
             </form>
 
             <div class="divider">atau</div>
@@ -346,7 +346,7 @@
             </button>
 
             <div class="register-text">
-                Belum Punya Akun? <a href="#">Daftar Sekarang</a>
+                Belum Punya Akun? <a href="{{ url('/register') }}">Daftar Sekarang</a>
             </div>
         </div>
     </div>
