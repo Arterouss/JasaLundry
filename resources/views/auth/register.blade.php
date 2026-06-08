@@ -104,32 +104,44 @@
                 <p>Daftar untuk mulai menggunakan MyLaundry</p>
             </div>
 
-            <form action="{{ url('/login') }}" method="GET">
-                <div class="form-group">
+            <form action="{{ route('signup') }}" method="POST">
+                @csrf <div class="form-group">
                     <label>Nama Lengkap</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Nama Lengkap">
+                    <input type="text" name="name" class="form-control" placeholder="Masukkan Nama Lengkap" value="{{ old('name') }}" required>
+                    @error('name')
+                        <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span>
+                    @enderror
                 </div>
+
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" class="form-control" placeholder="Masukkan Email">
+                    <input type="email" name="email" class="form-control" placeholder="Masukkan Email" value="{{ old('email') }}" required>
+                    @error('email')
+                        <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span>
+                    @enderror
                 </div>
+
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" class="form-control" placeholder="Masukkan Password">
+                    <input type="password" name="password" class="form-control" placeholder="Masukkan Password" required>
+                    @error('password')
+                        <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span>
+                    @enderror
                 </div>
+
                 <div class="form-group">
                     <label>Konfirmasi Password</label>
-                    <input type="password" class="form-control" placeholder="Ulangi Password">
+                    <input type="password" name="password_confirmation" class="form-control" placeholder="Ulangi Password" required>
                 </div>
 
                 <div class="form-options">
                     <label class="checkbox-group">
-                        <input type="checkbox" checked>
+                        <input type="checkbox" name="terms" required checked>
                         Saya setuju dengan syarat dan ketentuan
                     </label>
                 </div>
 
-                <a href="{{ url('/login') }}" class="btn btn-primary" style="display: block; line-height: normal;">Daftar</a>
+                <button type="submit" class="btn" style="background-color: #0F4A75; color: white; border: none;">Daftar</button>
             </form>
 
             <div class="divider">atau</div>
@@ -145,9 +157,10 @@
             </button>
 
             <div class="register-text">
-                Sudah Punya Akun? <a href="{{ url('/login') }}">Login Sekarang</a>
+                Sudah Punya Akun? <a href="{{ route('login') }}">Login Sekarang</a>
             </div>
         </div>
     </div>
+    
 </body>
 </html>
