@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pelanggan - MyLaundry</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2=family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: #1a1a1a; color: #333; display: flex; height: 100vh; overflow: hidden; }
@@ -18,20 +18,19 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #bbd8f0; text-decoration: none; font-size: 11px; cursor: pointer; transition: 0.3s; width: 100%; }
         .nav-item:hover, .nav-item.active { color: white; }
         .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
-        .nav-item.active svg { fill: white; }
         
         .sidebar-bottom { display: flex; flex-direction: column; align-items: center; }
         .sidebar-profile { width: 50px; height: 50px; background-color: #ccc; border-radius: 50%; cursor: pointer; }
 
-        /* Main Content */
-        .main-wrapper { flex-grow: 1; padding: 30px; overflow-y: auto; background-color: #1a1a1a; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 900px; background: white; padding: 30px 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: fit-content; }
+        /* Main Content - Perbaikan FULL SCREEN */
+        .main-wrapper { flex-grow: 1; padding: 40px; overflow-y: auto; background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 1000px; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); height: auto; }
 
         /* Top Header */
         .header-card { background-color: #0F4A75; color: white; border-radius: 12px; padding: 30px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header-text p { font-size: 16px; color: #A9C2D5; margin-bottom: 5px; }
         .header-text h1 { font-size: 28px; font-weight: 600; }
-        .profile-pic { width: 70px; height: 70px; background-color: #ccc; border-radius: 50%; }
+        .profile-pic { width: 70px; height: 70px; background-color: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0F4A75; font-size: 24px; }
 
         /* Notification */
         .notification-card { background-color: #bbd8f0; border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
@@ -44,8 +43,8 @@
 
         /* Action Bar */
         .action-bar { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-        .btn-pesan { background-color: #bbd8f0; color: #0F4A75; font-weight: 600; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; transition: background 0.3s; }
-        .btn-pesan:hover { background-color: #a3c9e8; }
+        .btn-pesan { background-color: #0F4A75; color: white; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; transition: background 0.3s; }
+        .btn-pesan:hover { background-color: #0b3656; }
 
         /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
@@ -59,34 +58,40 @@
         .timeline-title { display: flex; align-items: center; gap: 15px; }
         .timeline-title-text h3 { color: #0F4A75; font-size: 16px; margin-bottom: 3px; }
         .timeline-title-text p { font-size: 13px; color: #666; }
-        .badge-proses { background-color: #bbd8f0; color: #0F4A75; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        
+        /* Tombol Bayar / Status */
+        .btn-bayar { background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: 0.3s; }
+        .btn-bayar:hover { background-color: #16a34a; }
+        .btn-disabled { background-color: #94a3b8; color: #f1f5f9; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: not-allowed; text-decoration: none; pointer-events: none; }
 
         /* Timeline steps */
-        .timeline-steps { display: flex; justify-content: space-between; position: relative; margin: 0 10px; }
-        .timeline-steps::before { content: ''; position: absolute; top: 12px; left: 0; right: 0; height: 2px; background-color: #bbd8f0; z-index: 1; }
+        .timeline-steps { display: flex; justify-content: space-between; position: relative; margin: 0 10px; padding-bottom: 20px; }
+        .timeline-steps::before { content: ''; position: absolute; top: 12px; left: 0; right: 0; height: 2px; background-color: #cbd5e1; z-index: 1; }
         .step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .step-circle { width: 26px; height: 26px; background-color: white; border: 2px solid #bbd8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        
+        /* Default Lingkaran (Belum Lewat) */
+        .step-circle { width: 26px; height: 26px; background-color: white; border: 2px solid #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .step-label { font-size: 12px; color: #64748b; position: absolute; top: 35px; white-space: nowrap; }
+        
+        /* Class Active Jika Sudah Dilewati */
         .step.active .step-circle { background-color: #0F4A75; border-color: #0F4A75; }
-        .step.active .step-circle::after { content: '✓'; color: white; font-size: 14px; }
-        .step-label { font-size: 11px; color: #555; position: absolute; top: 35px; white-space: nowrap; }
+        .step.active .step-circle::after { content: '✓'; color: white; font-size: 13px; font-weight: bold; }
         .step.active .step-label { color: #0F4A75; font-weight: 600; }
         
-        /* Top links inside container for demo nav */
-        .demo-nav { display: flex; justify-content: flex-end; margin-bottom: 15px; }
-        .demo-nav a { text-decoration: none; color: #999; font-size: 12px; margin-left: 15px; }
-        .demo-nav a:hover { color: #0F4A75; }
+        .demo-nav { display: flex; justify-content: flex-end; margin-bottom: 15px; align-items: center; gap: 15px; }
+        .demo-nav a { text-decoration: none; color: #666; font-size: 13px; font-weight: 500; }
+        .demo-nav button { background: none; border: none; color: #e53e3e; font-size: 13px; font-weight: 500; cursor: pointer; }
     </style>
 </head>
 <body>
     
-    <!-- Left Sidebar -->
     <div class="sidebar">
         <div class="sidebar-top">
             <div class="sidebar-logo">
                 <svg viewBox="0 0 24 24"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="#0F4A75" stroke-width="2" stroke-linejoin="round"/><path d="M9 13H15" stroke="#0F4A75" stroke-width="2" stroke-linecap="round"/><path d="M10 17H14" stroke="#0F4A75" stroke-width="2" stroke-linecap="round"/><path d="M18.7 7L17.5 3.5C17.2 2.6 16.4 2 15.5 2H8.5C7.6 2 6.8 2.6 6.5 3.5L5.3 7" fill="none" stroke="#0F4A75" stroke-width="2" stroke-linejoin="round"/></svg>
             </div>
             
-            <a href="{{ url('/dashboard') }}" class="nav-item active">
+            <a href="{{ route('customer.dashboard') }}" class="nav-item active">
                 <svg viewBox="0 0 24 24"><path d="M4 13h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zm0 8h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1zm10 0h6c.55 0 1-.45 1-1v-8c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zM13 4v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1z"/></svg>
                 Beranda
             </a>
@@ -96,40 +101,45 @@
                 Riwayat
             </a>
             
-            <a href="{{ url('/pesan') }}" class="nav-item">
+            <a href="{{ route('customer.orders.create') }}" class="nav-item">
                 <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2l.01-12c0-1.1-.89-2-1.99-2zM12 3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm0 10c-2.76 0-5-2.24-5-5h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 2.76-2.24 5-5 5z"/></svg>
                 Pesan
             </a>
             
-            <a href="{{ url('/profile') }}" class="nav-item">
+            <a href="{{ route('customer.profile') }}" class="nav-item">
                 <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
                 Pengaturan
             </a>
         </div>
         
         <div class="sidebar-bottom">
-            <a href="{{ url('/profile') }}">
-                <div class="sidebar-profile"></div>
+            <a href="{{ route('customer.profile') }}">
+                <div class="sidebar-profile" style="background-image: url('https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0F4A75&color=fff'); background-size: cover;"></div>
             </a>
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-wrapper">
         <div class="container">
             <div class="demo-nav">
-                <a href="{{ url('/kelola-pesanan') }}">Ke Halaman Admin</a>
-                <a href="{{ url('/login') }}" style="color: #e53e3e;">Logout</a>
+                @if($user->role === 'admin')
+                    <a href="{{ route('admin.dashboard') }}">Ke Halaman Admin</a>
+                @endif
+                
+                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit">Logout</button>
+                </form>
             </div>
 
             <div class="header-card">
                 <div class="header-text">
-                    <p>Selamat Pagi</p>
-                    <h1>Nama_User</h1>
+                    <p>Selamat Datang,</p>
+                    <h1>{{ $user->name }}</h1>
                 </div>
-                <a href="{{ url('/profile') }}">
-                    <div class="profile-pic"></div>
-                </a>
+                <div class="profile-pic" style="background-color: white;">
+                    {{ strtoupper(substr($user->name, 0, 2)) }}
+                </div>
             </div>
 
             <div class="notification-card">
@@ -138,34 +148,38 @@
                         <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                     </div>
                     <div class="notif-text">
-                        <h3>Nama_Proses</h3>
-                        <p>Kode_pesanan</p>
+                        @if($latestOrder)
+                            <h3>Pesanan Anda Saat Ini: {{ ucfirst($latestOrder->status) }}</h3>
+                            <p>Invoice: #{{ $latestOrder->id }}</p>
+                        @else
+                            <h3>Belum Ada Pesanan Aktif</h3>
+                            <p>Silakan klik tombol di bawah untuk membuat orderan baru.</p>
+                        @endif
                     </div>
                 </div>
-                <div class="notif-time">5 menit lalu</div>
+                <div class="notif-time">{{ $latestOrder ? 'Update Terbaru' : 'Sekarang' }}</div>
             </div>
 
             <div class="action-bar">
-                <a href="{{ url('/pesan') }}" class="btn-pesan">
-                    + Buat Pesanan
-                </a>
+                <a href="{{ route('customer.orders.create') }}" class="btn-pesan">+ Buat Pesanan</a>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h2>10</h2>
+                    <h2>{{ $totalPesanan }}</h2>
                     <p>Total Pesanan</p>
                 </div>
                 <div class="stat-card">
-                    <h2>10</h2>
+                    <h2>{{ $runningOrders ?? $sedangProses }}</h2>
                     <p>Sedang Proses</p>
                 </div>
                 <div class="stat-card">
-                    <h2>10</h2>
+                    <h2>{{ $readyOrders ?? $siapDiambil }}</h2>
                     <p>Siap Diambil</p>
                 </div>
             </div>
 
+            @if($latestOrder)
             <div class="timeline-card">
                 <div class="timeline-header">
                     <div class="timeline-title">
@@ -173,42 +187,58 @@
                             <svg viewBox="0 0 24 24" style="fill: #0F4A75;"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.7 7L17.5 3.5C17.2 2.6 16.4 2 15.5 2H8.5C7.6 2 6.8 2.6 6.5 3.5L5.3 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
                         </div>
                         <div class="timeline-title-text">
-                            <h3>#Kode_Pesanan</h3>
-                            <p>(Keterangan)</p>
+                            <h3>#INV-{{ $latestOrder->id }}</h3>
+                            <p>Tipe Layanan: {{ ucfirst($latestOrder->delivery_type) }} ({{ ucfirst($latestOrder->payment_method) }})</p>
                         </div>
                     </div>
-                    <div class="badge-proses">
-                        <span style="color: #0F4A75; font-size: 16px; margin-right: 4px;">•</span> Diproses
+
+                    <div>
+                        @if($latestOrder->delivery_type === 'antar_jemput' && $latestOrder->payment_method === 'cashless' && $latestOrder->payment_status === 'unpaid')
+                            <a href="{{ route('customer.orders.checkout', $latestOrder->id) }}" class="btn-bayar">Bayar Sekarang</a>
+                        @else
+                            <a href="#" class="btn-disabled">Bayar Sekarang (Disabled)</a>
+                        @endif
                     </div>
                 </div>
 
+                @php
+                    // Mapping urutan index untuk mendeteksi sampai mana status berjalan
+                    $statuses = ['diterima', 'dijemput', 'dicuci', 'siap', 'diantar', 'selesai'];
+                    $currentStepIndex = array_search($latestOrder->status, $statuses);
+                @endphp
+
                 <div class="timeline-steps">
-                    <div class="step active">
+                    <div class="step {{ $currentStepIndex >= 0 ? 'active' : '' }}">
                         <div class="step-circle"></div>
                         <div class="step-label">Diterima</div>
                     </div>
-                    <div class="step active">
+                    <div class="step {{ $currentStepIndex >= 1 ? 'active' : '' }}">
                         <div class="step-circle"></div>
                         <div class="step-label">Dijemput</div>
                     </div>
-                    <div class="step active">
+                    <div class="step {{ $currentStepIndex >= 2 ? 'active' : '' }}">
                         <div class="step-circle"></div>
                         <div class="step-label">Dicuci</div>
                     </div>
-                    <div class="step active">
+                    <div class="step {{ $currentStepIndex >= 3 ? 'active' : '' }}">
                         <div class="step-circle"></div>
                         <div class="step-label">Siap</div>
                     </div>
-                    <div class="step active">
+                    <div class="step {{ $currentStepIndex >= 4 ? 'active' : '' }}">
                         <div class="step-circle"></div>
                         <div class="step-label">Diantar</div>
                     </div>
-                    <div class="step active">
+                    <div class="step {{ $currentStepIndex >= 5 ? 'active' : '' }}">
                         <div class="step-circle"></div>
                         <div class="step-label">Selesai</div>
                     </div>
                 </div>
             </div>
+            @else
+            <div class="timeline-card" style="text-align: center; color: #666; padding: 40px;">
+                Belum ada jejak riwayat pelacakan pengiriman pakaian untuk saat ini.
+            </div>
+            @endif
         </div>
     </div>
 </body>

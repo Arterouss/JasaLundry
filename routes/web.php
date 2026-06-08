@@ -30,46 +30,38 @@ Route::middleware('auth')->group(function () {
     // ------------------------------------------
     // KELOMPOK HAK AKSES: CUSTOMER (PELANGGAN)
     // ------------------------------------------
-    Route::middleware('middleware:\App\Http\Middleware\RoleMiddleware:customer')
-        ->prefix('customer')
-        ->name('customer.')
-        ->group(function () {
-            
-            // Mengarah ke view 'dashboard' milik customer melalui Controller
-            Route::get('/dashboard', [OrderController::class, 'dashboard'])->name('dashboard');
-            
-            // Halaman Form Pesan Laundry (Mengarah ke view 'pesan' kamu)
-            Route::get('/pesan', [OrderController::class, 'create'])->name('orders.create');
-            Route::post('/pesan', [OrderController::class, 'store'])->name('orders.store');
-            
-            // Halaman Pembayaran Cashless (Mengarah ke view 'pembayaran' kamu)
-            Route::get('/pembayaran/{order}', [OrderController::class, 'checkout'])->name('orders.checkout');
-            Route::post('/pembayaran/{order}/pay', [OrderController::class, 'processPayment'])->name('orders.pay');
-            
-            // Halaman Profile Pelanggan
-            Route::get('/profile', function () {
-                return view('profile'); // Sesuaikan jika nanti mau dibuatkan controller khusus profile
-            })->name('profile');
-    });
+    // ------------------------------------------
+// KELOMPOK HAK AKSES: CUSTOMER (PELANGGAN)
+// ------------------------------------------
+// Perbaikan: Langsung panggil Class Middleware-nya tanpa embel-embel string 'middleware:' di depan
+Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':customer')
+    ->prefix('customer')
+    ->name('customer.')
+    ->group(function () {
+        
+        Route::get('/dashboard', [OrderController::class, 'dashboard'])->name('dashboard');
+        Route::get('/pesan', [OrderController::class, 'create'])->name('orders.create');
+        Route::post('/pesan', [OrderController::class, 'store'])->name('orders.store');
+        Route::get('/pembayaran/{order}', [OrderController::class, 'checkout'])->name('orders.checkout');
+        Route::post('/pembayaran/{order}/pay', [OrderController::class, 'processPayment'])->name('orders.pay');
+        
+        Route::get('/profile', function () {
+            return view('customer.profile');
+        })->name('profile');
+});
 
-    // ------------------------------------------
-    // KELOMPOK HAK AKSES: ADMIN (KASIR/OWNER)
-    // ------------------------------------------
-    Route::middleware('middleware:\App\Http\Middleware\RoleMiddleware:admin')
-        ->prefix('admin')
-        ->name('admin.')
-        ->group(function () {
-            
-            // Dashboard Utama Admin (List Semua Orderan Masuk)
-            Route::get('/dashboard', [AdminOrderController::class, 'index'])->name('dashboard');
-            
-            // Halaman Kelola Pesanan (Input timbangan berat, hitung jarak/ongkir, dll)
-            Route::patch('/kelola-pesanan/{order}/assess', [AdminOrderController::class, 'assessOrder'])->name('orders.assess');
-            
-            // Perubahan status laundry step-by-step
-            Route::patch('/kelola-pesanan/{order}/update-status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
-            
-            // Pembuatan order transaksi langsung di kasir (Walk-in)
-            Route::post('/kelola-pesanan/walk-in', [AdminOrderController::class, 'storeWalkIn'])->name('orders.walk-in');
+// ------------------------------------------
+// KELOMPOK HAK AKSES: ADMIN (KASIR/OWNER)
+// ------------------------------------------
+// Perbaikan: Langsung panggil Class Middleware-nya tanpa embel-embel string 'middleware:' di depan
+Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':admin')
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        
+        Route::get('/dashboard', [AdminOrderController::class, 'index'])->name('dashboard');
+        Route::patch('/kelola-pesanan/{order}/assess', [AdminOrderController::class, 'assessOrder'])->name('orders.assess');
+        Route::patch('/kelola-pesanan/{order}/update-status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::post('/kelola-pesanan/walk-in', [AdminOrderController::class, 'storeWalkIn'])->name('orders.walk-in');
     });
 });

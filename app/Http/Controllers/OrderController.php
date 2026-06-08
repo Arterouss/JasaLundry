@@ -16,11 +16,11 @@ class OrderController extends Controller
      */
     public function create()
     {
-        // Mengambil data master untuk dropdown di form
         $services = Service::all();
         $perfumes = Perfume::all();
 
-        return view('customer.orders.create', compact('services', 'perfumes'));
+        // Dipastikan memanggil file 'pesan.blade.php' langsung di folder views
+        return view('customer.pesan', compact('services', 'perfumes'));
     }
 
     /**
@@ -28,8 +28,6 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi Bersyarat (Kondisional)
-        // Jika is_pickup_delivery dicentang (true), maka gps_address dan payment_method WAJIB diisi.
         $request->validate([
             'service_id' => 'required|exists:services,id',
             'perfume_id' => 'required|exists:perfumes,id',
@@ -40,20 +38,16 @@ class OrderController extends Controller
 
         $isPickup = $request->boolean('is_pickup_delivery');
 
-        // Logika Status Awal & Metode Pembayaran berdasarkan opsi Antar-Jemput
         if (!$isPickup) {
-            // JIKA Drop-off (bawa sendiri), status langsung DITERIMA dan pembayaran otomatis di tempat
             $status = OrderStatus::DITERIMA;
             $paymentMethod = 'cash_on_site';
             $gpsAddress = null;
         } else {
-            // JIKA Antar-Jemput, status awal DITERIMA (nanti admin yang ubah ke DIJEMPUT)
             $status = OrderStatus::DITERIMA;
             $paymentMethod = $request->payment_method;
             $gpsAddress = $request->gps_address;
         }
 
-        // Simpan data order ke database
         $order = Order::create([
             'customer_id' => Auth::id(),
             'service_id' => $request->service_id,
@@ -65,7 +59,6 @@ class OrderController extends Controller
             'status' => $status,
         ]);
 
-        // Catat Log Status Awal untuk Fitur Ceklis Riwayat
         $order->statusLogs()->create([
             'status' => $status->value,
         ]);
@@ -78,28 +71,39 @@ class OrderController extends Controller
      */
     public function dashboard()
     {
-        // Ambil semua pesanan milik pelanggan yang sedang login beserta log statusnya
-        $orders = Order::with(['service', 'perfume', 'statusLogs'])
-            ->where('customer_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = Auth::user();
 
-        return view('customer.dashboard', compact('orders'));
+        // Perbaikan Intelephense: Gunakan Order::query() di awal agar IDE paham ini adalah Eloquent Builder
+        $totalPesanan = Order::query()->where('customer_id', $user->id)->count();
+        
+        // Perbaikan Intelephense: Menggunakan klausa where konvensional untuk mengamankan deteksi argument
+        $sedangProses = Order::query()->where('customer_id', $user->id)
+            ->where('status', '!=', 'selesai')
+            ->count();
+            
+        $siapDiambil = Order::query()->where('customer_id', $user->id)
+            ->where('status', 'siap')
+            ->count();
+
+        $latestOrder = Order::query()->where('customer_id', $user->id)
+            ->latest()
+            ->first();
+
+        return view('customer.dashboard', compact('user', 'totalPesanan', 'sedangProses', 'siapDiambil', 'latestOrder'));
     }
 
     /**
-     * 4. Halaman Pembayaran (Khusus Cashless yang berstatus MENUNGGU_PEMBAYARAN)
+     * 4. Halaman Pembayaran (Khusus Cashless)
      */
     public function checkout(Order $order)
     {
-        // Keamanan: Pastikan order ini milik pelanggan yang login, metodenya cashless, dan statusnya pas
         if ($order->customer_id !== Auth::id() || 
             $order->payment_method !== 'cashless' || 
             $order->status !== OrderStatus::MENUNGGU_PEMBAYARAN) {
             abort(403, 'Akses tidak sah atau pesanan belum siap dibayar.');
         }
 
-        return view('customer.orders.checkout', compact('order'));
+        return view('customer.pembayaran', compact('order'));
     }
 
     /**
@@ -111,13 +115,11 @@ class OrderController extends Controller
             abort(403);
         }
 
-        // Update status pembayaran jadi lunas, dan status laundry lanjut ke DIPROSES
         $order->update([
             'payment_status' => 'paid',
             'status' => OrderStatus::DIPROSES,
         ]);
 
-        // Catat log perubahan status ke DIPROSES agar ceklis pelanggan bertambah
         $order->statusLogs()->create([
             'status' => OrderStatus::DIPROSES->value,
         ]);

@@ -12,7 +12,7 @@ class AuthController extends Controller
     // Menampilkan halaman Register/Signup
     public function showSignup()
     {
-        return view('auth.signup'); // Sesuaikan dengan nama file blade kamu nanti
+        return view('auth.register'); // Sesuaikan dengan nama file blade kamu nanti
     }
 
     // Proses Signup
