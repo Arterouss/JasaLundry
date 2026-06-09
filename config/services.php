@@ -31,7 +31,7 @@ return [
     'google' => [
     'client_id' => env('GOOGLE_CLIENT_ID'),
     'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    'redirect' => env('http://localhost/JasaLundry/public/auth/google/callback'),
+    'redirect' => env('/auth/google/callback'),
 ],
 
     'slack' => [
