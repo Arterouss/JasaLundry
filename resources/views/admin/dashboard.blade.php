@@ -62,12 +62,15 @@
             <div id="adminDropdown" class="dropdown-menu">
                 <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0;">
                 
-                <a href="#" class="logout-btn" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">
-                    🚪 Logout
-                </a>
-                <form id="admin-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
+            <a href="{{ route('logout') }}" 
+            onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+            style="color: #e53e3e; font-weight: 600;">
+            Logout
+            </a>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
             </div>
         </div>
     </div>
@@ -115,7 +118,7 @@
                                 <option>Siap</option>
                                 <option>Diantar</option>
                             </select>
-                            <a href="{{ url('/admin/pesanan/LDR-123/edit') }}" class="btn-tambah" style="background-color: #319795; padding: 6px 12px; font-size: 12px;">Kelola</a>
+                            <a href="{{ route('admin.admin.orders.edit', $orders->id) }}" class="btn-tambah" style="background-color: #319795; padding: 6px 12px; font-size: 12px;">Kelola</a>
                         </td>
                     </tr>
                 </tbody>

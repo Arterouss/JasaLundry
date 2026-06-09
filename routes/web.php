@@ -65,6 +65,8 @@ Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':admin')
     ->name('admin.')
     ->group(function () {
         
+        // Pastikan rute ini ada di dalam group admin kamu
+        Route::get('/admin/pesanan/{id}/edit', [AdminOrderController::class, 'edit'])->name('admin.orders.edit');
         Route::get('/dashboard', [AdminOrderController::class, 'index'])->name('dashboard');
         Route::patch('/kelola-pesanan/{order}/assess', [AdminOrderController::class, 'assessOrder'])->name('orders.assess');
         Route::patch('/kelola-pesanan/{order}/update-status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');

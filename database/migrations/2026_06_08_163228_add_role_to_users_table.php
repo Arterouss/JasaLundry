@@ -9,14 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Menambahkan role untuk membedakan admin dan customer
-            $table->string('role')->default('customer')->after('password'); 
+            // Menambahkan kolom role dengan default 'customer'
+            $table->string('role')->default('customer')->after('email');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            // Menghapus kolom role jika rollback dilakukan
             $table->dropColumn('role');
         });
     }

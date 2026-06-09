@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class AdminOrderController extends Controller
 {
     /**
-     * 1. Menampilkan Semua Pesanan Masuk di Dashboard Admin
+     * 1. Menampilkan Semua Pesanan Masuk
      */
     public function index()
     {
@@ -19,95 +19,72 @@ class AdminOrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.dashboard', compact('orders'));
+        // Pastikan nama view ini sesuai dengan nama file blade kamu (admin/edit.blade.php)
+        return view('admin.edit', compact('orders'));
     }
 
     /**
-     * 2. Proses Assessment oleh Admin (Input Berat, Jarak, & Kalkulasi)
+     * 2. Proses Assessment (Tombol Simpan Per Baris Tabel)
      */
-    public function assessOrder(Request $request, Order $order)
+    public function assessOrder(Request $request, $id)
     {
-        // Validasi inputan admin
+        // Temukan data order tunggal berdasarkan ID agar terhindar dari error Collection
+        $order = Order::findOrFail($id);
+
+        // Validasi inputan admin (sesuai name attribute di Blade)
         $request->validate([
             'weight' => 'required|numeric|min:0.1',
-            'distance_km' => 'required_if:is_pickup_delivery,true|nullable|numeric|min:0',
+            'distance' => 'required_if:is_pickup_delivery,true|nullable|numeric|min:0',
+            'status' => 'required|string',
         ]);
 
-        // 1. Ambil harga dasar dari layanan yang dipilih pelanggan
-        $pricePerKg = $order->service->price_per_kg;
+        // 1. Ambil harga dasar layanan pelanggan
+        $pricePerKg = $order->service->price_per_kg ?? 5000;
         $totalLaundry = $request->weight * $pricePerKg;
 
-        // 2. Hitung Ongkir jika pesanannya antar-jemput
+        // 2. Hitung Ongkir jika antar-jemput
         $totalOngkir = 0;
         if ($order->is_pickup_delivery) {
-            $tarifPerKm = 2000; // Kamu bisa ubah nominal tarif per km di sini
-            $totalOngkir = $request->distance_km * $tarifPerKm;
+            $tarifPerKm = 2000; 
+            // Membaca input 'distance' dari Blade
+            $totalOngkir = ($request->distance ?? 0) * $tarifPerKm;
         }
 
         $grandTotal = $totalLaundry + $totalOngkir;
 
-        // 3. Kalkulasi Estimasi Waktu (Menggunakan Batas Atas dari Master Service)
-        // Rumus: Waktu Sekarang + Menit Standar Layanan
-        $estimatedMinutes = $order->service->estimated_minutes;
+        // 3. Kalkulasi Estimasi Waktu
+        $estimatedMinutes = $order->service->estimated_minutes ?? 120;
         $estimatedCompletion = now()->addMinutes($estimatedMinutes);
 
-        // 4. Tentukan Status Selanjutnya berdasarkan Aturan Main kamu
-        if ($order->is_pickup_delivery && $order->payment_method === 'cashless') {
-            // Jika antar jemput + cashless, status PENDING dulu menunggu dibayar pelanggan
-            $nextStatus = OrderStatus::MENUNGGU_PEMBAYARAN;
-        } else {
-            // Jika drop-off atau bayar di tempat, bisa langsung masuk antrean PROSES
-            $nextStatus = OrderStatus::DIPROSES;
-        }
-
-        // Update data order
-        $order->update([
-            'weight' => $request->weight,
-            'distance_km' => $order->is_pickup_delivery ? $request->distance_km : null,
-            'grand_total' => $grandTotal,
-            'estimated_completion_time' => $estimatedCompletion,
-            'status' => $nextStatus,
-        ]);
-
-        // Catat perubahan status ke log tracking pelanggan
-        $order->statusLogs()->create([
-            'status' => $nextStatus->value,
-        ]);
-
-        return redirect()->route('admin.dashboard')->with('success', 'Kalkulasi order berhasil disimpan!');
-    }
-
-    /**
-     * 3. Update Status Manual oleh Admin (Logika Ceklis Berkelanjutan)
-     */
-    public function updateStatus(Request $request, Order $order)
-    {
-        $request->validate([
-            'status' => 'required|string',
-        ]);
-
-        // Cari value Enum yang sesuai dengan input string dari form admin
+        // 4. Ambil status operasional yang dipilih admin dari dropdown select
         $newStatus = OrderStatus::from($request->status);
 
+        // Update data order ke database (Gunakan kolom total_price dan distance sesuai aplikasi kamu)
         $order->update([
+            'weight' => $request->weight,
+            'distance' => $order->is_pickup_delivery ? $request->distance : null,
+            'total_price' => $grandTotal, // Sesuaikan jika nama kolom kamu grand_total atau total_price
+            'estimated_completion_time' => $estimatedCompletion,
             'status' => $newStatus,
         ]);
 
-        // Jika admin mengubah status menjadi SELESAI, otomatis set payment_status jadi lunas (terutama untuk cash_on_site)
+        // Jika status diubah menjadi SELESAI, otomatis tandai lunas
         if ($newStatus === OrderStatus::SELESAI) {
             $order->update(['payment_status' => 'paid']);
         }
 
-        // Catat ke log status agar di sisi pelanggan tercentang
-        $order->statusLogs()->create([
-            'status' => $newStatus->value,
-        ]);
+        // Catat perubahan status ke log tracking pelanggan
+        if (method_exists($order, 'statusLogs')) {
+            $order->statusLogs()->create([
+                'status' => $newStatus->value,
+            ]);
+        }
 
-        return redirect()->route('admin.dashboard')->with('success', 'Status pesanan berhasil diperbarui!');
+        return redirect()->route('admin.dashboard')->with('success', 'Data pesanan LDR-' . $order->id . ' berhasil diperbarui!');
     }
 
     /**
-     * 4. Spesial: Input Pesanan Spontan / Walk-In oleh Admin
+     * 3. Input Pesanan Spontan / Walk-In oleh Admin
      */
     public function storeWalkIn(Request $request)
     {
@@ -120,30 +97,29 @@ class AdminOrderController extends Controller
 
         $service = Service::findOrFail($request->service_id);
         
-        // Kalkulasi harga murni (Tanpa Ongkir karena datang langsung)
         $grandTotal = $request->weight * $service->price_per_kg;
         $estimatedCompletion = now()->addMinutes($service->estimated_minutes);
 
-        // Pelanggan spontan langsung bayar di tempat (cash_on_site) dan langsung masuk proses
         $order = Order::create([
-            'customer_id' => null, // Tidak terikat akun user manapun
+            'customer_id' => null, 
             'walk_in_name' => $request->walk_in_name,
             'service_id' => $request->service_id,
             'perfume_id' => $request->perfume_id,
             'is_pickup_delivery' => false,
             'gps_address' => null,
             'payment_method' => 'cash_on_site',
-            'payment_status' => 'unpaid', // Nanti lunas saat admin set status "Selesai"
+            'payment_status' => 'unpaid', 
             'weight' => $request->weight,
-            'grand_total' => $grandTotal,
-            'status' => OrderStatus::DIPROSES, // Langsung gas diproses
+            'total_price' => $grandTotal,
+            'status' => OrderStatus::DIPROSES, 
             'estimated_completion_time' => $estimatedCompletion,
         ]);
 
-        // Catat log awal langsung di status DIPROSES
-        $order->statusLogs()->create([
-            'status' => OrderStatus::DIPROSES->value,
-        ]);
+        if (method_exists($order, 'statusLogs')) {
+            $order->statusLogs()->create([
+                'status' => OrderStatus::DIPROSES->value,
+            ]);
+        }
 
         return redirect()->route('admin.dashboard')->with('success', 'Pesanan walk-in berhasil dibuat!');
     }
