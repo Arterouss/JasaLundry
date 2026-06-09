@@ -5,6 +5,12 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminOrderController;
 use Illuminate\Support\Facades\Route;
 
+// Rute untuk melempar user ke halaman Google
+Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+
+// Rute callback penampung kembalian dari Google
+Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
 // ==========================================
 // 1. RUTE TAMU (Hanya bisa diakses sebelum login)
 // ==========================================

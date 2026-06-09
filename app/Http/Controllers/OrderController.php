@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+// use App\Models\OrderStatusLog;
 use App\Models\Service;
 use App\Models\Perfume;
 use Illuminate\Http\Request;
@@ -26,6 +27,9 @@ class OrderController extends Controller
     /**
      * 2. Menyimpan Pesanan Baru dari Pelanggan
      */
+    /**
+     * 2. Menyimpan Pesanan Baru dari Pelanggan
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -38,12 +42,13 @@ class OrderController extends Controller
 
         $isPickup = $request->boolean('is_pickup_delivery');
 
+        // Set default status awal pesanan
+        $status = OrderStatus::DITERIMA; 
+
         if (!$isPickup) {
-            $status = OrderStatus::DITERIMA;
             $paymentMethod = 'cash_on_site';
             $gpsAddress = null;
         } else {
-            $status = OrderStatus::DITERIMA;
             $paymentMethod = $request->payment_method;
             $gpsAddress = $request->gps_address;
         }
@@ -59,8 +64,11 @@ class OrderController extends Controller
             'status' => $status,
         ]);
 
+        // Menggunakanis_object untuk ekstraksi value Enum yang aman
+        $statusValue = is_object($status) && isset($status->value) ? $status->value : $status;
+
         $order->statusLogs()->create([
-            'status' => $status->value,
+            'status' => $statusValue,
         ]);
 
         return redirect()->route('customer.dashboard')->with('success', 'Pesanan berhasil dibuat!');

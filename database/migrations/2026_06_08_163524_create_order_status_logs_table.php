@@ -12,8 +12,10 @@ return new class extends Migration
             $table->id();
             // Menghubungkan ke tabel orders, jika order dihapus maka log ikut terhapus
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
-            $table->string('status'); // Menyimpan status saat perubahan terjadi (misal: "pesanan_diproses")
-            $table->timestamp('created_at')->useCurrent(); // Otomatis mencatat waktu log dibuat
+            $table->string('status'); // Menyimpan status saat perubahan terjadi
+            
+            // HAPUS dua baris manual sebelumnya, GANTI dengan satu baris standar ini:
+            $table->timestamps(); 
         });
     }
 

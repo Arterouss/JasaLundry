@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -75,5 +77,44 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /**
+ * Memproses data user yang dikembalikan oleh Google
+ */
+    public function redirectToGoogle()
+        {
+            return Socialite::driver('google')->redirect();
+        }
+public function handleGoogleCallback()
+    {
+        try {
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver('google');
+            
+            // Sekarang VS Code tahu kalau $driver ini punya fungsi stateless()
+            $googleUser = $driver->stateless()->user();
+            
+            // Tambahkan query() agar Intelephense tahu ini adalah Eloquent Builder
+            $user = User::query()->where('email', $googleUser->getEmail())->first();
+            
+            if (!$user) {
+                // Jika belum ada, buat user baru otomatis sebagai customer
+                $user = User::query()->create([
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'role' => 'customer', 
+                    'password' => Hash::make(Str::random(24)), 
+                ]);
+            }
+            
+            // Login-kan user ke sistem Laravel
+            Auth::login($user);
+            
+            return redirect()->route('customer.dashboard')->with('success', 'Berhasil masuk menggunakan akun Google!');
+            
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'Terjadi kesalahan saat login menggunakan Google.');
+        }
     }
 }
