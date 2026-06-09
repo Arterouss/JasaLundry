@@ -118,7 +118,7 @@ class AdminOrderController extends Controller
             'weight' => 'required|numeric|min:0.1',
         ]);
 
-        $service = Service::find($request->service_id);
+        $service = Service::findOrFail($request->service_id);
         
         // Kalkulasi harga murni (Tanpa Ongkir karena datang langsung)
         $grandTotal = $request->weight * $service->price_per_kg;

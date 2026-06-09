@@ -29,8 +29,8 @@ return [
     ],
 
     'google' => [
-    'client_id' => env('245331952152-2lchqmvsfor5s8njrv4nnpec5rdoqdis.apps.googleusercontent.com'),
-    'client_secret' => env('GOCSPX-IjScmLB1lvCHE0ncKjMjbjqp2GC'),
+    'client_id' => env('GOOGLE_CLIENT_ID'),
+    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     'redirect' => env('http://localhost/JasaLundry/public/auth/google/callback'),
 ],
 
