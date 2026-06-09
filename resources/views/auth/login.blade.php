@@ -305,36 +305,43 @@
 
     <!-- Right Panel -->
     <div class="right-panel">
-        <div class="login-container">
-            <div class="login-header">
-                <h2>Selamat Datang</h2>
-                <p>Masuk ke akun MyLaundry Anda</p>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Selamat Datang</h2>
+            <p>Masuk ke akun MyLaundry Anda</p>
+        </div>
+
+        <form action="{{ route('login') }}" method="POST">
+            @csrf @error('email')
+                <div style="background-color: #fee2e2; color: #dc2626; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; font-weight: 500;">
+                    {{ $message }}
+                </div>
+            @enderror
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" class="form-control" placeholder="Amba@gmail.com" value="{{ old('email') }}" required>
             </div>
 
-            <form action="#" method="POST">
-                <div class="form-group">
-                    <label>Email atau No Handphone</label>
-                    <input type="text" class="form-control" placeholder="Amba@gmail.com">
-                </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control" placeholder="***************" required>
+            </div>
 
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" class="form-control" placeholder="***************">
-                </div>
+            <div class="form-options">
+                <label class="checkbox-group">
+                    <input type="checkbox" name="remember" checked>
+                    Ingat Saya?
+                </label>
+                <a href="#" class="forgot-link">Lupa Password?</a>
+            </div>
 
-                <div class="form-options">
-                    <label class="checkbox-group">
-                        <input type="checkbox" checked>
-                        Ingat Saya?
-                    </label>
-                    <a href="#" class="forgot-link">Lupa Password?</a>
-                </div>
+            <button type="submit" class="btn" style="background-color: #0F4A75; color: white; border: none;">Masuk</button>
+        </form>
 
-                <a href="{{ url('/dashboard') }}" class="btn btn-primary" style="display: block; line-height: normal;">Masuk</a>
-            </form>
+        <div class="divider">atau</div>
 
-            <div class="divider">atau</div>
-
+        <a href="{{ route('auth.google') }}" style="text-decoration: none;">
             <button type="button" class="btn btn-google">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -344,12 +351,13 @@
                 </svg>
                 Masuk dengan Google
             </button>
+        </a>
 
-            <div class="register-text">
-                Belum Punya Akun? <a href="{{ url('/register') }}">Daftar Sekarang</a>
-            </div>
+        <div class="register-text">
+            Belum Punya Akun? <a href="{{ route('signup') }}">Daftar Sekarang</a>
         </div>
     </div>
+</div>
 
 </body>
 </html>

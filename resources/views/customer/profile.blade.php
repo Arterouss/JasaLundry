@@ -43,7 +43,7 @@
     <div class="navbar">
         <h2 style="color: #bbd8f0;">MyLaundry (Profile)</h2>
         <div class="nav-links">
-            <a href="{{ url('/dashboard') }}">Kembali ke Dashboard</a>
+            <a href="{{ url('/customer/dashboard') }}">Kembali ke Dashboard</a>
         </div>
     </div>
 
