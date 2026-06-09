@@ -299,7 +299,7 @@
         </div>
 
         <div class="footer-text">
-            &copy; 2026 LaundryKu - Bersih & Terpercaya
+            &copy; 2026 MyLaundry - Bersih & Terpercaya
         </div>
     </div>
 
