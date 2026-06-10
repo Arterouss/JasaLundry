@@ -113,12 +113,12 @@
                         <div class="check-icon"></div>
                         <div class="service-icon"><svg viewBox="0 0 24 24"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
                         <h4>Cuci + Setrika</h4>
-                        <p>Rp 5.000/kg</p>
+                        <p>Rp 10.000/kg</p>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Parfum Cucian</label>
+                    <label>Perfume Cucian</label>
                     <select name="perfume_id" class="form-control" required>
                         <option value="" disabled selected>-- Pilih Aroma Parfum --</option>
                         @foreach($perfumes as $perfume)
@@ -164,8 +164,7 @@
             </div>
 
             <button type="submit" class="btn-submit">
-                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                Buat Pesanan Sekarang
+                Buat Pesanan
             </button>
         </form>
     </div>
