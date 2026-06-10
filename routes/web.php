@@ -56,7 +56,8 @@ Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':customer')
         })->name('profile');
 
         Route::get('/riwayat', function () {
-            return view('customer.riwayat');
+            $orders = \App\Models\Order::with('service')->where('customer_id', auth()->id())->latest()->get();
+            return view('customer.riwayat', compact('orders'));
         })->name('riwayat');
 });
 

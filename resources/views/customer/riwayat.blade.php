@@ -118,141 +118,84 @@
                 <button class="filter-btn">Diantar(1)</button>
             </div>
 
-            <!-- Order Card 1 -->
-            <div class="order-card">
-                <div class="order-header">
-                    <div class="order-title">
-                        <div class="notif-icon">
-                            <svg viewBox="0 0 24 24"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        </div>
-                        <div class="order-title-text">
-                            <h3>#Kode_Pesanan</h3>
-                            <p>(Keterangan)</p>
-                        </div>
-                    </div>
-                    <div class="badge-paid">Sudah dibayar</div>
-                </div>
+            @forelse($orders as $order)
+                @php
+                    // Helper to determine step status
+                    $statuses = [
+                        'pesanan_diterima' => 1,
+                        'pesanan_dijemput' => 2,
+                        'menunggu_pembayaran' => 2,
+                        'pesanan_diproses' => 3,
+                        'pesanan_siap' => 4,
+                        'pesanan_diantar' => 5,
+                        'pesanan_selesai' => 6
+                    ];
+                    
+                    $currentStepIndex = $statuses[$order->status->value ?? $order->status] ?? 1;
+                    
+                    // Filter helper: "Menunggu" (1-2), "Proses" (3), "Siap" (4), "Diantar" (5)
+                    // You can add data-status attributes here if you want Javascript filtering
+                @endphp
 
-                <div class="timeline-steps">
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diterima</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dijemput</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dicuci</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Siap</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diantar</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Selesai</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Card 2 -->
-            <div class="order-card">
-                <div class="order-header">
-                    <div class="order-title">
-                        <div class="notif-icon">
-                            <svg viewBox="0 0 24 24"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-title">
+                            <div class="notif-icon">
+                                <svg viewBox="0 0 24 24"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            </div>
+                            <div class="order-title-text">
+                                <h3>#INV-{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</h3>
+                                <p>{{ $order->service->name ?? 'Layanan' }} - {{ $order->weight ? $order->weight . ' kg' : 'Berat belum ditimbang' }}</p>
+                            </div>
                         </div>
-                        <div class="order-title-text">
-                            <h3>#Kode_Pesanan</h3>
-                            <p>(Keterangan)</p>
-                        </div>
+                        @if($order->payment_status === 'paid')
+                            <div class="badge-paid">Sudah dibayar</div>
+                        @else
+                            <div class="badge-paid" style="background-color: #fde8e8; color: #c81e1e;">Belum dibayar</div>
+                        @endif
                     </div>
-                    <div class="badge-paid">Sudah dibayar</div>
-                </div>
 
-                <div class="timeline-steps">
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diterima</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dijemput</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dicuci</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Siap</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diantar</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Selesai</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Card 3 -->
-            <div class="order-card">
-                <div class="order-header">
-                    <div class="order-title">
-                        <div class="notif-icon">
-                            <svg viewBox="0 0 24 24"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <div class="timeline-steps">
+                        <div class="step {{ $currentStepIndex >= 1 ? 'active' : '' }}">
+                            <div class="step-circle"></div>
+                            <div class="step-label">Diterima</div>
                         </div>
-                        <div class="order-title-text">
-                            <h3>#Kode_Pesanan</h3>
-                            <p>(Keterangan)</p>
+                        <div class="step {{ $currentStepIndex >= 2 ? 'active' : '' }}">
+                            <div class="step-circle"></div>
+                            <div class="step-label">Dijemput</div>
+                        </div>
+                        <div class="step {{ $currentStepIndex >= 3 ? 'active' : '' }}">
+                            <div class="step-circle"></div>
+                            <div class="step-label">Dicuci</div>
+                        </div>
+                        <div class="step {{ $currentStepIndex >= 4 ? 'active' : '' }}">
+                            <div class="step-circle"></div>
+                            <div class="step-label">Siap</div>
+                        </div>
+                        <div class="step {{ $currentStepIndex >= 5 ? 'active' : '' }}">
+                            <div class="step-circle"></div>
+                            <div class="step-label">Diantar</div>
+                        </div>
+                        <div class="step {{ $currentStepIndex >= 6 ? 'active' : '' }}">
+                            <div class="step-circle"></div>
+                            <div class="step-label">Selesai</div>
                         </div>
                     </div>
-                    <div class="badge-paid">Sudah dibayar</div>
                 </div>
-
-                <div class="timeline-steps">
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diterima</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dijemput</div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dicuci</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Siap</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diantar</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Selesai</div>
-                    </div>
+            @empty
+                <div style="text-align: center; padding: 50px; color: #666;">
+                    Belum ada riwayat pesanan.
                 </div>
-            </div>
+            @endforelse
 
-            <div class="pagination">
-                <button class="page-btn"><</button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">></button>
-            </div>
+            <!-- Pagination (Placeholder for UI) -->
+            @if(count($orders) > 0)
+                <div class="pagination">
+                    <button class="page-btn"><</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">></button>
+                </div>
+            @endif
         </div>
     </div>
 </body>
