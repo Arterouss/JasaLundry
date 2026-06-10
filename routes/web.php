@@ -54,6 +54,10 @@ Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':customer')
         Route::get('/profile', function () {
             return view('customer.profile');
         })->name('profile');
+
+        Route::get('/riwayat', function () {
+            return view('customer.riwayat');
+        })->name('riwayat');
 });
 
 // ------------------------------------------
@@ -69,5 +73,13 @@ Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':admin')
         Route::patch('/kelola-pesanan/{order}/assess', [AdminOrderController::class, 'assessOrder'])->name('orders.assess');
         Route::patch('/kelola-pesanan/{order}/update-status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::post('/kelola-pesanan/walk-in', [AdminOrderController::class, 'storeWalkIn'])->name('orders.walk-in');
+
+        Route::get('/tambah-pesanan', function () {
+            return view('admin.tambah-pesanan');
+        });
+        
+        Route::get('/edit-pesanan', function () {
+            return view('admin.edit-pesanan');
+        });
     });
 });

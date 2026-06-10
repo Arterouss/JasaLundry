@@ -33,7 +33,12 @@
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover { background-color: #f8fafc; }
 
+        .status-container { display: flex; align-items: center; gap: 8px; }
         .status-select { padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; font-size: 12px; font-family: inherit; color: #333; outline: none; background: white; }
+        .btn-edit { width: 28px; height: 28px; background-color: #bbd8f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; }
+        .btn-edit:hover { background-color: #0F4A75; }
+        .btn-edit:hover svg { fill: white; }
+        .btn-edit svg { width: 14px; height: 14px; fill: #0F4A75; transition: 0.3s; }
         
         .pagination { display: flex; justify-content: flex-end; gap: 5px; margin-top: 20px; }
         .page-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; background: white; border-radius: 4px; font-size: 13px; color: #666; cursor: pointer; }
@@ -55,7 +60,7 @@
                 <h2>Kelola Pesanan</h2>
                 <p>Update status cucian pelanggan</p>
             </div>
-            <a href="#" class="btn-tambah">Tambah Pesanan</a>
+            <a href="{{ url('/admin/tambah-pesanan') }}" class="btn-tambah">Tambah Pesanan</a>
         </div>
 
         <div class="filters">
@@ -86,11 +91,16 @@
                         <td>50 kg</td>
                         <td>Rp. 150.000</td>
                         <td>
-                            <select class="status-select">
-                                <option>Diproses</option>
-                                <option>Diterima</option>
-                                <option>Siap</option>
-                            </select>
+                            <div class="status-container">
+                                <select class="status-select">
+                                    <option>Diproses</option>
+                                    <option>Diterima</option>
+                                    <option>Siap</option>
+                                </select>
+                                <a href="{{ url('/admin/edit-pesanan') }}" class="btn-edit">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -100,10 +110,15 @@
                         <td>10 kg</td>
                         <td>Rp. 30.000</td>
                         <td>
-                            <select class="status-select">
-                                <option>Diterima</option>
-                                <option selected>Diproses</option>
-                            </select>
+                            <div class="status-container">
+                                <select class="status-select">
+                                    <option>Diterima</option>
+                                    <option selected>Diproses</option>
+                                </select>
+                                <a href="{{ url('/admin/edit-pesanan') }}" class="btn-edit">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -113,9 +128,14 @@
                         <td>5 kg</td>
                         <td>Rp. 15.000</td>
                         <td>
-                            <select class="status-select">
-                                <option selected>Diterima</option>
-                            </select>
+                            <div class="status-container">
+                                <select class="status-select">
+                                    <option selected>Diterima</option>
+                                </select>
+                                <a href="{{ url('/admin/edit-pesanan') }}" class="btn-edit">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -125,9 +145,14 @@
                         <td>20 kg</td>
                         <td>Rp. 60.000</td>
                         <td>
-                            <select class="status-select">
-                                <option selected>Diproses</option>
-                            </select>
+                            <div class="status-container">
+                                <select class="status-select">
+                                    <option selected>Diproses</option>
+                                </select>
+                                <a href="{{ url('/admin/edit-pesanan') }}" class="btn-edit">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
