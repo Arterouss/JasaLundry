@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class AdminOrderController extends Controller
 {
     /**
-     * 1. Menampilkan Semua Pesanan Masuk
+     * 1. Menampilkan Semua Pesanan Masuk di Dashboard
      */
     public function index()
     {
@@ -19,51 +19,117 @@ class AdminOrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Pastikan nama view ini sesuai dengan nama file blade kamu (admin/edit.blade.php)
-        return view('admin.edit', compact('orders'));
+        return view('admin.dashboard', compact('orders'));
     }
 
     /**
-     * 2. Proses Assessment (Tombol Simpan Per Baris Tabel)
+     * BARU: Menampilkan Halaman Form Edit Pesanan (edit-pesanan.blade.php)
+     * Dipanggil ketika tombol edit di halaman dashboard ditekan
+     */
+    public function edit($id)
+    {
+        // Cari data pesanan tunggal berdasarkan ID, jika tidak ada lempar error 404
+        $order = Order::with(['customer', 'service', 'perfume'])->findOrFail($id);
+
+        // Lempar data pesanan ke file blade yang kamu amankan (edit-pesanan.blade.php)
+        return view('admin.edit-pesanan', compact('order'));
+    }
+
+    /**
+     * BARU: Menangani Perubahan Status Dropdown via AJAX/Fetch API jika diperlukan
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'status' => 'required|string'
+        ]);
+
+        $newStatus = OrderStatus::from($request->status);
+
+        $order->update([
+            'status' => $newStatus
+        ]);
+
+        if (method_exists($order, 'statusLogs')) {
+            $order->statusLogs()->create([
+                'status' => $newStatus->value,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status pesanan berhasil diperbarui!'
+        ]);
+    }
+
+    /**
+     * 2. Proses Assessment (Dipicu ketika tombol Simpan di form edit-pesanan ditekan)
+     */
+    /**
+     * 2. Proses Assessment (Dipicu ketika tombol Simpan di form edit-pesanan ditekan)
      */
     public function assessOrder(Request $request, $id)
     {
-        // Temukan data order tunggal berdasarkan ID agar terhindar dari error Collection
         $order = Order::findOrFail($id);
 
-        // Validasi inputan admin (sesuai name attribute di Blade)
+        // Validasi inputan admin dengan mencocokkan payload bantuan 'is_pickup_delivery' dari blade
         $request->validate([
-            'weight' => 'required|numeric|min:0.1',
+            'weight' => $order->status === OrderStatus::DITERIMA ? 'required|numeric|min:0.1' : 'nullable',
             'distance' => 'required_if:is_pickup_delivery,true|nullable|numeric|min:0',
             'status' => 'required|string',
         ]);
 
-        // 1. Ambil harga dasar layanan pelanggan
-        $pricePerKg = $order->service->price_per_kg ?? 5000;
-        $totalLaundry = $request->weight * $pricePerKg;
-
-        // 2. Hitung Ongkir jika antar-jemput
-        $totalOngkir = 0;
-        if ($order->is_pickup_delivery) {
-            $tarifPerKm = 2000; 
-            // Membaca input 'distance' dari Blade
-            $totalOngkir = ($request->distance ?? 0) * $tarifPerKm;
+        // Konversi string dari Blade ke instance Enum secara clean
+        $newStatus = OrderStatus::tryFrom($request->status);
+        
+        if (!$newStatus) {
+            return redirect()->back()->withErrors(['status' => 'Status laundry tidak valid.']);
         }
 
-        $grandTotal = $totalLaundry + $totalOngkir;
+        // MITIGASI: Jika status saat ini sudah "Diproses" atau lebih tinggi, KUNCI data lama
+        if ($order->status !== OrderStatus::DITERIMA) {
+            $weight = $order->weight;
+            $distance = $order->distance;
+            $grandTotal = $order->total_price; 
+            $estimatedCompletion = $order->estimated_completion_time;
+        } else {
+            // Jika masih berstatus 'DITERIMA', hitung otomatis tarif real time di backend
+            $weight = $request->weight;
+            $distance = $order->is_pickup_delivery ? $request->distance : null;
 
-        // 3. Kalkulasi Estimasi Waktu
-        $estimatedMinutes = $order->service->estimated_minutes ?? 120;
-        $estimatedCompletion = now()->addMinutes($estimatedMinutes);
+            // 1. Ambil harga dasar layanan
+            $pricePerKg = $order->service->price_per_kg ?? 5000;
+            $totalLaundry = $weight * $pricePerKg;
 
-        // 4. Ambil status operasional yang dipilih admin dari dropdown select
-        $newStatus = OrderStatus::from($request->status);
+            // 2. Hitung Ongkir jika tipe antar-jemput aktif
+            // Di dalam fungsi assessOrder, ganti bagian perhitungan ongkir:
 
-        // Update data order ke database (Gunakan kolom total_price dan distance sesuai aplikasi kamu)
+$totalOngkir = 0;
+if ($order->is_pickup_delivery) {
+    // Logika Zonasi Backend (HARUS SAMA dengan Javascript)
+    if ($distance <= 2) {
+        $totalOngkir = 5000;
+    } elseif ($distance <= 5) {
+        $totalOngkir = 10000;
+    } elseif ($distance <= 10) {
+        $totalOngkir = 20000;
+    } else {
+        $totalOngkir = 30000;
+    }
+}
+
+$grandTotal = $totalLaundry + $totalOngkir;
+
+            // 3. Kalkulasi Estimasi Waktu Selesai
+            $estimatedMinutes = $order->service->estimated_minutes ?? 120;
+            $estimatedCompletion = now()->addMinutes($estimatedMinutes);
+        }
+
+        // Update data order ke database 
         $order->update([
-            'weight' => $request->weight,
-            'distance' => $order->is_pickup_delivery ? $request->distance : null,
-            'total_price' => $grandTotal, // Sesuaikan jika nama kolom kamu grand_total atau total_price
+            'weight' => $weight,
+            'distance' => $distance,
+            'total_price' => $grandTotal, 
             'estimated_completion_time' => $estimatedCompletion,
             'status' => $newStatus,
         ]);
@@ -73,7 +139,7 @@ class AdminOrderController extends Controller
             $order->update(['payment_status' => 'paid']);
         }
 
-        // Catat perubahan status ke log tracking pelanggan
+        // Catat log status tracking
         if (method_exists($order, 'statusLogs')) {
             $order->statusLogs()->create([
                 'status' => $newStatus->value,

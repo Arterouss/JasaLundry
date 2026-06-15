@@ -36,53 +36,55 @@ Route::middleware('auth')->group(function () {
     // ------------------------------------------
     // KELOMPOK HAK AKSES: CUSTOMER (PELANGGAN)
     // ------------------------------------------
+    Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':customer')
+        ->prefix('customer')
+        ->name('customer.')
+        ->group(function () {
+            
+            Route::get('/dashboard', [OrderController::class, 'dashboard'])->name('dashboard');
+            // Cari kode ini di dalam group customer:
+            Route::get('/riwayat', [OrderController::class, 'history'])->name('orders.history');
+            Route::get('/pesan', [OrderController::class, 'create'])->name('orders.create');
+            Route::post('/pesan', [OrderController::class, 'store'])->name('orders.store');
+            Route::get('/pembayaran/{order}', [OrderController::class, 'checkout'])->name('orders.checkout');
+            Route::post('/pembayaran/{order}/pay', [OrderController::class, 'processPayment'])->name('orders.pay');
+            
+            Route::get('/profile', function () {
+                return view('customer.profile');
+            })->name('profile');
+    });
+
     // ------------------------------------------
-// KELOMPOK HAK AKSES: CUSTOMER (PELANGGAN)
-// ------------------------------------------
-// Perbaikan: Langsung panggil Class Middleware-nya tanpa embel-embel string 'middleware:' di depan
-Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':customer')
-    ->prefix('customer')
-    ->name('customer.')
-    ->group(function () {
-        
-        Route::get('/dashboard', [OrderController::class, 'dashboard'])->name('dashboard');
-        Route::get('/pesan', [OrderController::class, 'create'])->name('orders.create');
-        Route::post('/pesan', [OrderController::class, 'store'])->name('orders.store');
-        Route::get('/pembayaran/{order}', [OrderController::class, 'checkout'])->name('orders.checkout');
-        Route::post('/pembayaran/{order}/pay', [OrderController::class, 'processPayment'])->name('orders.pay');
-        
-        Route::get('/profile', function () {
-            return view('customer.profile');
-        })->name('profile');
-
-        Route::get('/riwayat', function () {
-            $orders = \App\Models\Order::with('service')->where('customer_id', auth()->id())->latest()->get();
-            return view('customer.riwayat', compact('orders'));
-        })->name('riwayat');
-});
-
-// ------------------------------------------
 // KELOMPOK HAK AKSES: ADMIN (KASIR/OWNER)
 // ------------------------------------------
-// Perbaikan: Langsung panggil Class Middleware-nya tanpa embel-embel string 'middleware:' di depan
 Route::middleware(\App\Http\Middleware\RoleMiddleware::class . ':admin')
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
         
-        // Pastikan rute ini ada di dalam group admin kamu
-        Route::get('/admin/pesanan/{id}/edit', [AdminOrderController::class, 'edit'])->name('admin.orders.edit');
+        // Dashboard utama admin
         Route::get('/dashboard', [AdminOrderController::class, 'index'])->name('dashboard');
-        Route::patch('/kelola-pesanan/{order}/assess', [AdminOrderController::class, 'assessOrder'])->name('orders.assess');
+        
+        // 1. RUTE EDIT DINAMIS (Menggunakan URL rapi, mengarah ke Controller fungsi edit)
+        Route::get('/pesanan/{id}/edit', [AdminOrderController::class, 'edit'])->name('orders.edit');
+        
+        // 2. RUTE PROSES SIMPAN EDIT (Sesuai parameter $id di Controller kamu)
+        Route::patch('/kelola-pesanan/{id}/assess', [AdminOrderController::class, 'assessOrder'])->name('orders.assess');
+        
+        // 3. RUTE UPDATE STATUS INSTAN VIA AJAX
         Route::patch('/kelola-pesanan/{order}/update-status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+        
+        // 4. RUTE PROSES WALK-IN
         Route::post('/kelola-pesanan/walk-in', [AdminOrderController::class, 'storeWalkIn'])->name('orders.walk-in');
 
+        // 5. Halaman Form Tambah Pesanan Walk-In
         Route::get('/tambah-pesanan', function () {
             return view('admin.tambah-pesanan');
-        });
+        })->name('orders.create');
         
+        // 6. RUTE CADANGAN (Rute statis awalmu yang bikin halaman mau nampil)
         Route::get('/edit-pesanan', function () {
             return view('admin.edit-pesanan');
-        });
+        })->name('orders.edit-view');
     });
 });

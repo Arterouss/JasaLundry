@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pelanggan - MyLaundry</title>
-    <link href="https://fonts.googleapis.com/css2=family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: #1a1a1a; color: #333; display: flex; height: 100vh; overflow: hidden; }
@@ -22,7 +22,7 @@
         .sidebar-bottom { display: flex; flex-direction: column; align-items: center; }
         .sidebar-profile { width: 50px; height: 50px; background-color: #ccc; border-radius: 50%; cursor: pointer; }
 
-        /* Main Content - Perbaikan FULL SCREEN */
+        /* Main Content */
         .main-wrapper { flex-grow: 1; padding: 40px; overflow-y: auto; background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 1000px; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); height: auto; }
 
@@ -48,9 +48,9 @@
 
         /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background-color: #bbd8f0; text-align: center; padding: 30px 20px; border-radius: 12px; color: #0F4A75; }
-        .stat-card h2 { font-size: 40px; font-weight: 700; margin-bottom: 5px; }
-        .stat-card p { font-size: 14px; font-weight: 500; }
+        .stats-card { background-color: #bbd8f0; text-align: center; padding: 30px 20px; border-radius: 12px; color: #0F4A75; }
+        .stats-card h2 { font-size: 40px; font-weight: 700; margin-bottom: 5px; }
+        .stats-card p { font-size: 14px; font-weight: 500; }
 
         /* Timeline Card */
         .timeline-card { background-color: #e5eff8; border-radius: 12px; padding: 25px; border: 1px solid #bbd8f0; }
@@ -60,20 +60,21 @@
         .timeline-title-text p { font-size: 13px; color: #666; }
         
         /* Tombol Bayar / Status */
-        .btn-bayar { background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: 0.3s; }
+        .btn-bayar { background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: 0.3s; display: inline-block; }
         .btn-bayar:hover { background-color: #16a34a; }
-        .btn-disabled { background-color: #94a3b8; color: #f1f5f9; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: not-allowed; text-decoration: none; pointer-events: none; }
+        .btn-disabled { background-color: #94a3b8; color: #f1f5f9; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: not-allowed; text-decoration: none; pointer-events: none; display: inline-block; }
+        .btn-paid-success { background-color: #0F4A75; color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: default; text-decoration: none; display: inline-block; }
 
         /* Timeline steps */
         .timeline-steps { display: flex; justify-content: space-between; position: relative; margin: 0 10px; padding-bottom: 20px; }
         .timeline-steps::before { content: ''; position: absolute; top: 12px; left: 0; right: 0; height: 2px; background-color: #cbd5e1; z-index: 1; }
         .step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         
-        /* Default Lingkaran (Belum Lewat) */
+        /* Default Lingkaran */
         .step-circle { width: 26px; height: 26px; background-color: white; border: 2px solid #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .step-label { font-size: 12px; color: #64748b; position: absolute; top: 35px; white-space: nowrap; }
         
-        /* Class Active Jika Sudah Dilewati */
+        /* Active Style */
         .step.active .step-circle { background-color: #0F4A75; border-color: #0F4A75; }
         .step.active .step-circle::after { content: '✓'; color: white; font-size: 13px; font-weight: bold; }
         .step.active .step-label { color: #0F4A75; font-weight: 600; }
@@ -96,7 +97,7 @@
                 Beranda
             </a>
             
-            <a href="#" class="nav-item">
+            <a href="{{ route('customer.orders.history') }}" class="nav-item">
                 <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                 Riwayat
             </a>
@@ -105,31 +106,26 @@
                 <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2l.01-12c0-1.1-.89-2-1.99-2zM12 3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm0 10c-2.76 0-5-2.24-5-5h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 2.76-2.24 5-5 5z"/></svg>
                 Pesan
             </a>
-
         </div>
         
-<div class="sidebar-bottom" style="position: relative; display: inline-block;">
-    <button onclick="toggleDropdown(event)" style="background: none; border: none; padding: 0; cursor: pointer; outline: none;">
-        <div class="sidebar-profile" style="background-image: url('https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0F4A75&color=fff'); background-size: cover; width: 45px; height: 45px; border-radius: 50%;"></div>
-    </button>
+        <div class="sidebar-bottom" style="position: relative; display: inline-block;">
+            <button onclick="toggleDropdown(event)" style="background: none; border: none; padding: 0; cursor: pointer; outline: none;">
+                <div class="sidebar-profile" style="background-image: url('https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0F4A75&color=fff'); background-size: cover; width: 45px; height: 45px; border-radius: 50%;"></div>
+            </button>
 
-    <div id="profileDropdown" style="display: none; position: absolute; bottom: 55px; left: 0; background-color: white; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); border-radius: 8px; z-index: 999; overflow: hidden; border: 1px solid #e2e8f0;">
-        
-        <a href="{{ route('customer.profile') }}" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; font-family: 'Inter', sans-serif; transition: 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='transparent'">
-            ⚙️ Setting Profile
-        </a>
-        
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0;">
-
-        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="color: #e53e3e; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; font-family: 'Inter', sans-serif; transition: 0.2s; font-weight: 500;" onmouseover="this.style.backgroundColor='#fff5f5'" onmouseout="this.style.backgroundColor='transparent'">
-            🚪 Logout
-        </a>
-
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
-    </div>
-</div>
+            <div id="profileDropdown" style="display: none; position: absolute; bottom: 55px; left: 0; background-color: white; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); border-radius: 8px; z-index: 999; overflow: hidden; border: 1px solid #e2e8f0;">
+                <a href="{{ route('customer.profile') }}" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; transition: 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='transparent'">
+                    ⚙️ Setting Profile
+                </a>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0;">
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="color: #e53e3e; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; transition: 0.2s; font-weight: 500;" onmouseover="this.style.backgroundColor='#fff5f5'" onmouseout="this.style.backgroundColor='transparent'">
+                    🚪 Logout
+                </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+            </div>
+        </div>
     </div>
 
     <div class="main-wrapper">
@@ -138,7 +134,6 @@
                 @if($user->role === 'admin')
                     <a href="{{ route('admin.dashboard') }}">Ke Halaman Admin</a>
                 @endif
-                
                 <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                     @csrf
                     <button type="submit">Logout</button>
@@ -162,7 +157,7 @@
                     </div>
                     <div class="notif-text">
                         @if($latestOrder)
-                            <h3>Pesanan Anda Saat Ini: {{ ucfirst($latestOrder->status->value) }}</h3>
+                            <h3>Pesanan Anda Saat Ini: {{ ucfirst($latestOrder->status->value ?? $latestOrder->status) }}</h3>
                             <p>Invoice: #{{ $latestOrder->id }}</p>
                         @else
                             <h3>Belum Ada Pesanan Aktif</h3>
@@ -178,16 +173,16 @@
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stats-card">
                     <h2>{{ $totalPesanan }}</h2>
                     <p>Total Pesanan</p>
                 </div>
-                <div class="stat-card">
-                    <h2>{{ $runningOrders ?? $sedangProses }}</h2>
+                <div class="stats-card">
+                    <h2>{{ $sedangProses }}</h2>
                     <p>Sedang Proses</p>
                 </div>
-                <div class="stat-card">
-                    <h2>{{ $readyOrders ?? $siapDiambil }}</h2>
+                <div class="stats-card">
+                    <h2>{{ $siapDiambil }}</h2>
                     <p>Siap Diambil</p>
                 </div>
             </div>
@@ -201,50 +196,67 @@
                         </div>
                         <div class="timeline-title-text">
                             <h3>#INV-{{ $latestOrder->id }}</h3>
-                            <p>Tipe Layanan: {{ ucfirst($latestOrder->delivery_type) }} ({{ ucfirst($latestOrder->payment_method) }})</p>
+                            <p>Tipe Layanan: {{ $latestOrder->is_pickup_delivery ? 'Antar Jemput' : 'Ambil Sendiri' }} ({{ ucfirst($latestOrder->payment_method) }})</p>
                         </div>
                     </div>
 
                     <div>
-                        @if($latestOrder->delivery_type === 'antar_jemput' && $latestOrder->payment_method === 'cashless' && $latestOrder->payment_status === 'unpaid')
-                            <a href="{{ route('customer.orders.checkout', $latestOrder->id) }}" class="btn-bayar">Bayar Sekarang</a>
+                        @if($latestOrder->is_pickup_delivery && $latestOrder->payment_method === 'cashless')
+                            @if($latestOrder->payment_status === 'paid')
+                                <span class="btn-paid-success">✓ Lunas</span>
+                            @elseif($latestOrder->status->value === 'pesanan_diproses' || $latestOrder->status->value === 'pesanan_siap')
+                                <a href="{{ route('customer.orders.checkout', $latestOrder->id) }}" class="btn-bayar">Bayar Sekarang</a>
+                            @else
+                                <a href="#" class="btn-disabled" title="Tombol terkunci. Pembayaran dapat dilakukan setelah pakaian dijemput kurir & dihitung beratnya oleh admin.">Menunggu Timbangan</a>
+                            @endif
                         @else
-                            <a href="#" class="btn-disabled">Bayar Sekarang (Disabled)</a>
+                            <a href="#" class="btn-disabled" title="Pembayaran COD dilakukan langsung saat penyerahan pakaian.">Bayar di Tempat (COD)</a>
                         @endif
                     </div>
                 </div>
 
                 @php
-                    // Mapping urutan index untuk mendeteksi sampai mana status berjalan
-                    $statuses = ['diterima', 'dijemput', 'dicuci', 'siap', 'diantar', 'selesai'];
-                    $currentStepIndex = array_search($latestOrder->status, $statuses);
+                    // 1. Ambil nilai string database dari Enum (misal: 'pesanan_diproses')
+                    $currentStatusString = $latestOrder->status instanceof \App\Enums\OrderStatus 
+                        ? $latestOrder->status->value 
+                        : $latestOrder->status;
+
+                    // 2. LOGIKA DINAMIS TIMELINE BERDASARKAN PARAMETER IS_PICKUP_DELIVERY
+                    if ($latestOrder->is_pickup_delivery) {
+                        // Jika menggunakan Antar Jemput (6 Tahapan)
+                        $steps = [
+                            ['key' => 'pesanan_diterima', 'label' => 'Diterima'],
+                            ['key' => 'pesanan_dijemput', 'label' => 'Dijemput'],
+                            ['key' => 'pesanan_diproses', 'label' => 'Diproses'],
+                            ['key' => 'pesanan_siap',     'label' => 'Siap'],
+                            ['key' => 'pesanan_diantar',  'label' => 'Diantar'],
+                            ['key' => 'pesanan_selesai',  'label' => 'Selesai']
+                        ];
+                    } else {
+                        // Jika Datang Sendiri ke Toko (4 Tahapan)
+                        $steps = [
+                            ['key' => 'pesanan_diterima', 'label' => 'Diterima'],
+                            ['key' => 'pesanan_diproses', 'label' => 'Diproses'],
+                            ['key' => 'pesanan_siap',     'label' => 'Siap'],
+                            ['key' => 'pesanan_selesai',  'label' => 'Selesai']
+                        ];
+                    }
+
+                    // 3. Cari posisi indeks urutan status saat ini
+                    $currentStepIndex = array_search($currentStatusString, array_column($steps, 'key'));
+                    
+                    if ($currentStepIndex === false) {
+                        $currentStepIndex = 0;
+                    }
                 @endphp
 
                 <div class="timeline-steps">
-                    <div class="step {{ $currentStepIndex >= 0 ? 'active' : '' }}">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diterima</div>
-                    </div>
-                    <div class="step {{ $currentStepIndex >= 1 ? 'active' : '' }}">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dijemput</div>
-                    </div>
-                    <div class="step {{ $currentStepIndex >= 2 ? 'active' : '' }}">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Dicuci</div>
-                    </div>
-                    <div class="step {{ $currentStepIndex >= 3 ? 'active' : '' }}">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Siap</div>
-                    </div>
-                    <div class="step {{ $currentStepIndex >= 4 ? 'active' : '' }}">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Diantar</div>
-                    </div>
-                    <div class="step {{ $currentStepIndex >= 5 ? 'active' : '' }}">
-                        <div class="step-circle"></div>
-                        <div class="step-label">Selesai</div>
-                    </div>
+                    @foreach($steps as $index => $step)
+                        <div class="step {{ $currentStepIndex >= $index ? 'active' : '' }}">
+                            <div class="step-circle"></div>
+                            <div class="step-label">{{ $step['label'] }}</div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
             @else
@@ -257,9 +269,7 @@
 
 <script>
     function toggleDropdown(event) {
-        // Mencegah klik menembus ke elemen latar belakang
         event.stopPropagation();
-        
         var dropdown = document.getElementById("profileDropdown");
         if (dropdown.style.display === "none" || dropdown.style.display === "") {
             dropdown.style.display = "block";
@@ -268,7 +278,6 @@
         }
     }
 
-    // Menutup dropdown secara otomatis jika pengguna mengeklik di luar menu
     window.onclick = function(event) {
         var dropdown = document.getElementById("profileDropdown");
         if (dropdown && dropdown.style.display === "block") {

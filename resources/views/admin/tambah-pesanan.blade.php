@@ -34,7 +34,7 @@
 </head>
 <body>
     <div>
-        <a href="{{ url('/admin/kelola-pesanan') }}" class="back-link">&larr; Kembali</a>
+        <a href="{{ url('/admin/dashboard') }}" class="back-link">&larr; Kembali</a>
         <div class="container">
             <div class="header-section">
                 <div class="header-title">

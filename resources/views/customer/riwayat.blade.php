@@ -21,22 +21,22 @@
         .nav-item.active svg { fill: white; }
         
         .sidebar-bottom { display: flex; flex-direction: column; align-items: center; }
-        .sidebar-profile { width: 50px; height: 50px; background-color: #ccc; border-radius: 50%; cursor: pointer; }
+        .sidebar-profile { width: 45px; height: 45px; background-color: #ccc; border-radius: 50%; border: 2px solid #bbd8f0; background-size: cover; background-position: center; }
 
         /* Main Content */
         .main-wrapper { flex-grow: 1; padding: 30px; overflow-y: auto; background-color: #f5f7fa; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 900px; background: white; padding: 30px 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: fit-content; }
+        .container { width: 100%; max-width: 900px; background: white; padding: 30px 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: fit-content; margin-bottom: 40px; }
 
         .header-section { margin-bottom: 25px; }
         .header-title h2 { font-size: 24px; font-weight: 600; color: #0F4A75; margin-bottom: 5px; }
         .header-title p { color: #666; font-size: 14px; }
         
         .filters { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .filter-btn { background: white; border: 1px solid #0F4A75; color: #0F4A75; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.3s; }
-        .filter-btn.active { background-color: #0F4A75; color: white; }
+        .filter-link { background: white; border: 1px solid #0F4A75; color: #0F4A75; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.3s; text-decoration: none; }
+        .filter-link.active { background-color: #0F4A75; color: white; }
 
         /* Order Card */
-        .order-card { background-color: #e5eff8; border-radius: 12px; padding: 20px; border: 1px solid #bbd8f0; margin-bottom: 20px; }
+        .order-card { background-color: #e5eff8; border-radius: 12px; padding: 20px; border: 1px solid #bbd8f0; margin-bottom: 35px; }
         .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
         .order-title { display: flex; align-items: center; gap: 15px; }
         
@@ -44,28 +44,28 @@
         .notif-icon svg { width: 24px; height: 24px; fill: #0F4A75; }
         
         .order-title-text h3 { color: #0F4A75; font-size: 15px; font-weight: 600; }
-        .order-title-text p { font-size: 12px; color: #666; }
-        .badge-paid { background-color: #bbd8f0; color: #0F4A75; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .order-title-text p { font-size: 12px; color: #666; margin-top: 2px; }
+        .badge-status { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-paid { background-color: #c6f6d5; color: #22543d; }
+        .badge-unpaid { background-color: #fde8e8; color: #c81e1e; }
 
         /* Timeline steps */
-        .timeline-steps { display: flex; justify-content: space-between; position: relative; margin: 0 10px; }
+        .timeline-steps { display: flex; justify-content: space-between; position: relative; margin: 0 10px; padding-bottom: 10px; }
         .timeline-steps::before { content: ''; position: absolute; top: 12px; left: 0; right: 0; height: 2px; background-color: #bbd8f0; z-index: 1; }
         .step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .step-circle { width: 26px; height: 26px; background-color: white; border: 2px solid #bbd8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .step.active .step-circle { background-color: #0F4A75; border-color: #0F4A75; }
-        .step.active .step-circle::after { content: '✓'; color: white; font-size: 14px; }
+        .step.active .step-circle::after { content: '✓'; color: white; font-size: 13px; font-weight: bold; }
         .step-label { font-size: 11px; color: #555; position: absolute; top: 35px; white-space: nowrap; }
         .step.active .step-label { color: #0F4A75; font-weight: 600; }
         
-        .pagination { display: flex; justify-content: flex-end; gap: 5px; margin-top: 20px; }
-        .page-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; background: white; border-radius: 4px; font-size: 13px; color: #666; cursor: pointer; }
-        .page-btn.active { background-color: #0F4A75; color: white; border-color: #0F4A75; }
-
+        /* Pagination Link Overriding Custom */
+        .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 30px; }
+        .pagination-wrapper nav svg { width: 20px; height: 20px; }
     </style>
 </head>
 <body>
     
-    <!-- Left Sidebar -->
     <div class="sidebar">
         <div class="sidebar-top">
             <div class="sidebar-logo">
@@ -77,7 +77,7 @@
                 Beranda
             </a>
             
-            <a href="{{ route('customer.riwayat') }}" class="nav-item active">
+            <a href="{{ route('customer.orders.history') }}" class="nav-item active">
                 <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                 Riwayat
             </a>
@@ -87,54 +87,72 @@
                 Pesan
             </a>
             
-            <a href="{{ route('customer.profile') }}" class="nav-item">
-                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-                Pengaturan
-            </a>
         </div>
         
-        <div class="sidebar-bottom">
-            <a href="{{ route('customer.profile') }}">
-                <div class="sidebar-profile"></div>
-            </a>
+        <div class="sidebar-bottom" style="position: relative; display: inline-block;">
+            <button onclick="toggleDropdown(event)" style="background: none; border: none; padding: 0; cursor: pointer; outline: none;">
+                <div class="sidebar-profile" style="background-image: url('https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0F4A75&color=fff'); background-size: cover; width: 45px; height: 45px; border-radius: 50%;"></div>
+            </button>
+
+            <div id="profileDropdown" style="display: none; position: absolute; bottom: 55px; left: 0; background-color: white; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); border-radius: 8px; z-index: 999; overflow: hidden; border: 1px solid #e2e8f0;">
+                <a href="{{ route('customer.profile') }}" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; transition: 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='transparent'">
+                    ⚙️ Setting Profile
+                </a>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0;">
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="color: #e53e3e; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; transition: 0.2s; font-weight: 500;" onmouseover="this.style.backgroundColor='#fff5f5'" onmouseout="this.style.backgroundColor='transparent'">
+                    🚪 Logout
+                </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-wrapper">
         <div class="container">
             <div class="header-section">
                 <div class="header-title">
-                    <h2>Riwayat Pesanan</h2>
-                    <p>Riwayat pesanan yang aktif dan selesai</p>
+                    <h2>Riwayat Transaksi</h2>
+                    <p>Pantau status pengerjaan pakaian aktif dan riwayat transaksimu</p>
                 </div>
             </div>
 
             <div class="filters">
-                <button class="filter-btn active">Semua(3)</button>
-                <button class="filter-btn">Menunggu(0)</button>
-                <button class="filter-btn">Proses(1)</button>
-                <button class="filter-btn">Siap(1)</button>
-                <button class="filter-btn">Diantar(1)</button>
+                <a href="{{ route('customer.orders.history') }}" class="filter-link {{ !request('status') ? 'active' : '' }}">Semua</a>
+                <a href="{{ route('customer.orders.history', ['status' => 'menunggu']) }}" class="filter-link {{ request('status') == 'menunggu' ? 'active' : '' }}">Menunggu</a>
+                <a href="{{ route('customer.orders.history', ['status' => 'proses']) }}" class="filter-link {{ request('status') == 'proses' ? 'active' : '' }}">Proses</a>
+                <a href="{{ route('customer.orders.history', ['status' => 'siap']) }}" class="filter-link {{ request('status') == 'siap' ? 'active' : '' }}">Siap</a>
+                <a href="{{ route('customer.orders.history', ['status' => 'diantar']) }}" class="filter-link {{ request('status') == 'diantar' ? 'active' : '' }}">Diantar</a>
             </div>
 
             @forelse($orders as $order)
                 @php
-                    // Helper to determine step status
-                    $statuses = [
-                        'pesanan_diterima' => 1,
-                        'pesanan_dijemput' => 2,
-                        'menunggu_pembayaran' => 2,
-                        'pesanan_diproses' => 3,
-                        'pesanan_siap' => 4,
-                        'pesanan_diantar' => 5,
-                        'pesanan_selesai' => 6
-                    ];
-                    
-                    $currentStepIndex = $statuses[$order->status->value ?? $order->status] ?? 1;
-                    
-                    // Filter helper: "Menunggu" (1-2), "Proses" (3), "Siap" (4), "Diantar" (5)
-                    // You can add data-status attributes here if you want Javascript filtering
+                    // Ambil nilai string database dari objek Enum
+                    $currentStatusString = $order->status instanceof \App\Enums\OrderStatus ? $order->status->value : $order->status;
+
+                    // STRUKTUR TIMELINE DINAMIS SESUAI LAYANAN ANTAR JEMPUT
+                    if ($order->is_pickup_delivery) {
+                        $steps = [
+                            ['key' => 'pesanan_diterima', 'label' => 'Diterima'],
+                            ['key' => 'pesanan_dijemput', 'label' => 'Dijemput'],
+                            ['key' => 'pesanan_diproses', 'label' => 'Diproses'],
+                            ['key' => 'pesanan_siap',     'label' => 'Siap'],
+                            ['key' => 'pesanan_diantar',  'label' => 'Diantar'],
+                            ['key' => 'pesanan_selesai',  'label' => 'Selesai']
+                        ];
+                    } else {
+                        $steps = [
+                            ['key' => 'pesanan_diterima', 'label' => 'Diterima'],
+                            ['key' => 'pesanan_diproses', 'label' => 'Diproses'],
+                            ['key' => 'pesanan_siap',     'label' => 'Siap'],
+                            ['key' => 'pesanan_selesai',  'label' => 'Selesai']
+                        ];
+                    }
+
+                    // Ambil posisi nomor index untuk menentukan tanda centang (✓)
+                    $currentStepIndex = array_search($currentStatusString, array_column($steps, 'key'));
+                    if ($currentStepIndex === false) { $currentStepIndex = 0; }
                 @endphp
 
                 <div class="order-card">
@@ -144,59 +162,55 @@
                                 <svg viewBox="0 0 24 24"><path d="M19.5 8.5L18.5 20.5C18.5 21.3 17.8 22 17 22H7C6.2 22 5.5 21.3 5.5 20.5L4.5 8.5C4.5 7.7 5.2 7 6 7H18C18.8 7 19.5 7.7 19.5 8.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                             </div>
                             <div class="order-title-text">
-                                <h3>#INV-{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</h3>
-                                <p>{{ $order->service->name ?? 'Layanan' }} - {{ $order->weight ? $order->weight . ' kg' : 'Berat belum ditimbang' }}</p>
+                                <h3>#INV-{{ $order->id }}</h3>
+                                <p>{{ $order->service->name ?? 'Layanan Umum' }} - {{ $order->weight ? number_format($order->weight, 1) . ' kg' : 'Belum ditimbang' }}</p>
+                                <p style="font-size: 11px; color: #888;">Tanggal Order: {{ $order->created_at->format('d M Y, H:i') }} WIB</p>
                             </div>
                         </div>
-                        @if($order->payment_status === 'paid')
-                            <div class="badge-paid">Sudah dibayar</div>
-                        @else
-                            <div class="badge-paid" style="background-color: #fde8e8; color: #c81e1e;">Belum dibayar</div>
-                        @endif
+                        
+                        <div class="badge-status {{ $order->payment_status === 'paid' ? 'badge-paid' : 'badge-unpaid' }}">
+                            {{ $order->payment_status === 'paid' ? 'Sudah dibayar' : 'Belum dibayar' }}
+                        </div>
                     </div>
 
                     <div class="timeline-steps">
-                        <div class="step {{ $currentStepIndex >= 1 ? 'active' : '' }}">
-                            <div class="step-circle"></div>
-                            <div class="step-label">Diterima</div>
-                        </div>
-                        <div class="step {{ $currentStepIndex >= 2 ? 'active' : '' }}">
-                            <div class="step-circle"></div>
-                            <div class="step-label">Dijemput</div>
-                        </div>
-                        <div class="step {{ $currentStepIndex >= 3 ? 'active' : '' }}">
-                            <div class="step-circle"></div>
-                            <div class="step-label">Dicuci</div>
-                        </div>
-                        <div class="step {{ $currentStepIndex >= 4 ? 'active' : '' }}">
-                            <div class="step-circle"></div>
-                            <div class="step-label">Siap</div>
-                        </div>
-                        <div class="step {{ $currentStepIndex >= 5 ? 'active' : '' }}">
-                            <div class="step-circle"></div>
-                            <div class="step-label">Diantar</div>
-                        </div>
-                        <div class="step {{ $currentStepIndex >= 6 ? 'active' : '' }}">
-                            <div class="step-circle"></div>
-                            <div class="step-label">Selesai</div>
-                        </div>
+                        @foreach($steps as $index => $step)
+                            <div class="step {{ $currentStepIndex >= $index ? 'active' : '' }}">
+                                <div class="step-circle"></div>
+                                <div class="step-label">{{ $step['label'] }}</div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @empty
-                <div style="text-align: center; padding: 50px; color: #666;">
-                    Belum ada riwayat pesanan.
+                <div style="text-align: center; padding: 60px 20px; color: #718096; background: #edf2f7; border-radius: 8px;">
+                    <p style="font-weight: 500; font-size: 15px;">Tidak ada riwayat transaksi ditemukan untuk kategori ini.</p>
                 </div>
             @endforelse
 
-            <!-- Pagination (Placeholder for UI) -->
-            @if(count($orders) > 0)
-                <div class="pagination">
-                    <button class="page-btn"><</button>
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">></button>
-                </div>
-            @endif
+            <div class="pagination-wrapper">
+                {{ $orders->links() }}
+            </div>
         </div>
     </div>
+
+<script>
+    function toggleDropdown(event) {
+        event.stopPropagation();
+        var dropdown = document.getElementById("profileDropdown");
+        if (dropdown.style.display === "none" || dropdown.style.display === "") {
+            dropdown.style.display = "block";
+        } else {
+            dropdown.style.display = "none";
+        }
+    }
+
+    window.onclick = function(event) {
+        var dropdown = document.getElementById("profileDropdown");
+        if (dropdown && dropdown.style.display === "block") {
+            dropdown.style.display = "none";
+        }
+    }
+</script>
 </body>
 </html>

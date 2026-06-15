@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
-// use App\Models\OrderStatusLog;
 use App\Models\Service;
 use App\Models\Perfume;
 use Illuminate\Http\Request;
@@ -18,15 +17,17 @@ class OrderController extends Controller
     public function create()
     {
         $services = Service::all();
-        $perfumes = Perfume::all();
+        
+        // Mengambil semua parfum, menghitung jumlah penggunaannya di tabel orders,
+        // lalu diurutkan dari yang paling banyak dipesan (Terpopuler)
+        $perfumes = Perfume::withCount('orders')
+                        ->orderBy('orders_count', 'desc')
+                        ->get();
 
-        // Dipastikan memanggil file 'pesan.blade.php' langsung di folder views
+        // Mengirim data $services dan $perfumes ke halaman pesan.blade.php
         return view('customer.pesan', compact('services', 'perfumes'));
     }
 
-    /**
-     * 2. Menyimpan Pesanan Baru dari Pelanggan
-     */
     /**
      * 2. Menyimpan Pesanan Baru dari Pelanggan
      */
@@ -64,7 +65,6 @@ class OrderController extends Controller
             'status' => $status,
         ]);
 
-        // Menggunakanis_object untuk ekstraksi value Enum yang aman
         $statusValue = is_object($status) && isset($status->value) ? $status->value : $status;
 
         $order->statusLogs()->create([
@@ -81,10 +81,8 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        // Perbaikan Intelephense: Gunakan Order::query() di awal agar IDE paham ini adalah Eloquent Builder
         $totalPesanan = Order::query()->where('customer_id', $user->id)->count();
         
-        // Perbaikan Intelephense: Menggunakan klausa where konvensional untuk mengamankan deteksi argument
         $sedangProses = Order::query()->where('customer_id', $user->id)
             ->where('status', '!=', 'selesai')
             ->count();
@@ -98,6 +96,38 @@ class OrderController extends Controller
             ->first();
 
         return view('customer.dashboard', compact('user', 'totalPesanan', 'sedangProses', 'siapDiambil', 'latestOrder'));
+    }
+
+    /**
+     * 6. Menampilkan Halaman Riwayat Pesanan dengan Filter Dinamis
+     */
+    public function history(Request $request)
+    {
+        $user = Auth::user();
+
+        // Membuat instance query dasar dari Model Order khusus milik user login
+        $query = Order::query()->where('customer_id', $user->id);
+
+        // Menangkap parameter filter kategori dari URL (Request GET)
+        $statusFilter = $request->get('status');
+
+        if ($statusFilter) {
+            if ($statusFilter === 'menunggu') {
+                // Menunggu Pembayaran atau Baru Masuk Antrean Antar Jemput
+                $query->whereIn('status', [\App\Enums\OrderStatus::DITERIMA, \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN]);
+            } elseif ($statusFilter === 'proses') {
+                $query->whereIn('status', [\App\Enums\OrderStatus::DIJEMPUT, \App\Enums\OrderStatus::DIPROSES]);
+            } elseif ($statusFilter === 'siap') {
+                $query->where('status', \App\Enums\OrderStatus::SIAP);
+            } elseif ($statusFilter === 'diantar') {
+                $query->where('status', \App\Enums\OrderStatus::DIANTAR);
+            }
+        }
+
+        // Ambil data dengan pagination (misal 5 data per halaman agar rapi)
+        $orders = $query->orderBy('created_at', 'desc')->paginate(5);
+
+        return view('customer.riwayat', compact('user', 'orders'));
     }
 
     /**

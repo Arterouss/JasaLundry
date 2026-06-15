@@ -70,6 +70,7 @@
 
         .btn-submit { width: 100%; padding: 15px; background-color: #0F4A75; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; text-decoration: none; margin-top: 10px; }
         .btn-submit:hover { background-color: #0b3757; box-shadow: 0 4px 12px rgba(15, 74, 117, 0.3); }
+        .btn-submit:disabled { background-color: #a0aec0; cursor: not-allowed; box-shadow: none; }
         .btn-submit svg { width: 18px; height: 18px; fill: white; }
     </style>
 </head>
@@ -83,12 +84,20 @@
     </div>
 
     <div class="container">
+        @if ($errors->has('distance'))
+            <div style="background-color: #fed7d7; color: #c53030; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                {{ $errors->first('distance') }}
+            </div>
+        @endif
+
         <form action="{{ route('customer.orders.store') }}" method="POST" id="orderForm">
             @csrf
             
             <input type="hidden" name="service_id" id="selected_service_id" value="1">
             <input type="hidden" name="is_pickup_delivery" id="is_pickup_delivery" value="0">
             <input type="hidden" name="payment_method" id="selected_payment_method" value="">
+            
+            <input type="hidden" name="distance" id="distance" value="0">
 
             <div class="form-section">
                 <div class="section-title">
@@ -121,8 +130,12 @@
                     <label>Perfume Cucian</label>
                     <select name="perfume_id" class="form-control" required>
                         <option value="" disabled selected>-- Pilih Aroma Parfum --</option>
-                        @foreach($perfumes as $perfume)
-                            <option value="{{ $perfume->id }}">{{ $perfume->name }}</option>
+                        @foreach($perfumes as $index => $perfume)
+                            <option value="{{ $perfume->id }}">
+                                {{ $perfume->name }} 
+                                {{ $index === 0 ? '🔥 (Paling Banyak Dipilih Pelanggan!)' : '' }}
+                                {{ $index === 1 ? '⭐ (Favorit)' : '' }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -144,7 +157,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Alamat GPS Terkini</label>
+                    <label>Alamat Antar Jemput (Deteksi Gmaps Otomatis)</label>
                     <div class="gps-wrapper disabled" id="gpsWrapper">
                         <input type="text" name="gps_address" id="gps_address" class="form-control" placeholder="Aktifkan Antar Jemput lalu klik 'Ambil Lokasi'" readonly>
                         <button type="button" class="btn-gps" id="btnGetGps">
@@ -152,6 +165,7 @@
                             Ambil Lokasi
                         </button>
                     </div>
+                    <span id="info-jarak" style="font-size: 13px; display: block; margin-top: 8px; font-weight: 500;"></span>
                 </div>
 
                 <div class="form-group">
@@ -163,7 +177,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit">
+            <button type="submit" class="btn-submit" id="btnSubmitForm">
                 Buat Pesanan
             </button>
         </form>
@@ -184,6 +198,16 @@
             const paymentCards = document.querySelectorAll('.payment-card');
             const selectedPaymentInput = document.getElementById('selected_payment_method');
 
+            // MODIFIKASI: Elemen baru untuk handling jarak & submit
+            const inputJarakHidden = document.getElementById('distance');
+            const infoJarakSpan = document.getElementById('info-jarak');
+            const btnSubmitForm = document.getElementById('btnSubmitForm');
+
+            // Koordinat Toko Laundry (Jl. Cidurian Utara No.25, Sukapura, Kiaracondong)
+            const TOKO_LAT = -6.9272;
+            const TOKO_LON = 107.6433;
+            const BATAS_MAKSIMAL_KM = 25;
+
             // 1. Logika Klik Pilihan Jenis Layanan Utama
             serviceCards.forEach(card => {
                 card.addEventListener('click', function() {
@@ -193,7 +217,7 @@
                 });
             });
 
-            // 2. Logika Toggle Switch Antar Jemput (Enabled / Disabled GPS & Payment)
+            // 2. Logika Toggle Switch Antar Jemput
             pickupToggle.addEventListener('click', function() {
                 this.classList.toggle('active');
                 const isChecked = this.classList.contains('active');
@@ -203,17 +227,20 @@
                 if (isChecked) {
                     gpsWrapper.classList.remove('disabled');
                     paymentGrid.classList.remove('disabled');
-                    gpsAddressInput.removeAttribute('readonly');
-                    gpsAddressInput.placeholder = "Mencari koordinat lokasi...";
-                    getRealtimeLocation(); // Trigger pencarian lokasi otomatis saat dinyalakan
+                    gpsAddressInput.placeholder = "Mencari alamat jalan dan mengukur jarak...";
+                    btnSubmitForm.disabled = true; // Kunci dulu sampai koordinat & jarak selesai dihitung
+                    getRealtimeLocation(); 
                 } else {
                     gpsWrapper.classList.add('disabled');
                     paymentGrid.classList.add('disabled');
-                    gpsAddressInput.setAttribute('readonly', true);
                     gpsAddressInput.value = "";
                     gpsAddressInput.placeholder = "Aktifkan Antar Jemput lalu klik 'Ambil Lokasi'";
                     
-                    // Reset Pilihan Payment
+                    // Reset status jarak dan aktifkan tombol kembali
+                    inputJarakHidden.value = "0";
+                    infoJarakSpan.innerText = "";
+                    btnSubmitForm.disabled = false;
+                    
                     paymentCards.forEach(c => c.classList.remove('active'));
                     selectedPaymentInput.value = "";
                 }
@@ -228,19 +255,49 @@
                 });
             });
 
-            // 4. Integrasi Geolocation API HTML5 untuk mengambil Garis Lintang & Bujur GPS Akurat
+            // 4. MODIFIKASI FITUR BARU: AMBIL KOORDINAT, HITUNG HAVERSINE, & REVERSE GEOCODE
             function getRealtimeLocation() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
                             const lat = position.coords.latitude;
                             const lng = position.coords.longitude;
-                            // Menyimpan string koordinat GPS yang siap dibaca oleh Admin via Google Maps
-                            gpsAddressInput.value = `${lat}, ${lng} (Lokasi Terkini)`;
+                            
+                            // Hitung Jarak Berdasarkan Haversine Formula
+                            const jarakKM = calculateHaversine(TOKO_LAT, TOKO_LON, lat, lng);
+                            inputJarakHidden.value = jarakKM.toFixed(1);
+
+                            // Validasi Batasan Jarak Maksimal 25 KM sekitar Bandung
+                            if (jarakKM > BATAS_MAKSIMAL_KM) {
+                                infoJarakSpan.style.color = "#e53e3e";
+                                infoJarakSpan.innerText = `❌ Jarak Anda (${jarakKM.toFixed(1)} KM) di luar jangkauan! Maksimal layanan antar-jemput adalah 25 KM.`;
+                                btnSubmitForm.disabled = true; // Kunci tombol submit
+                            } else {
+                                infoJarakSpan.style.color = "#38a169";
+                                infoJarakSpan.innerText = `📍 Jarak ke toko Anda: ${jarakKM.toFixed(1)} KM (Masuk dalam radius jangkauan layanan).`;
+                                btnSubmitForm.disabled = false; // Buka tombol submit
+                            }
+                            
+                            // Hitung alamat asli menggunakan OpenStreetMap Nominatim API secara gratis & responsif
+                            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data && data.display_name) {
+                                        gpsAddressInput.value = data.display_name;
+                                    } else {
+                                        gpsAddressInput.value = `${lat}, ${lng} (Koordinat Terdeteksi)`;
+                                    }
+                                })
+                                .catch(err => {
+                                    gpsAddressInput.value = `${lat}, ${lng} (Gagal memuat nama jalan)`;
+                                });
                         },
                         (error) => {
                             gpsAddressInput.value = "";
-                            gpsAddressInput.placeholder = "Gagal mengambil lokasi otomatis. Silakan ketik manual.";
+                            gpsAddressInput.placeholder = "Gagal mengambil lokasi otomatis.";
+                            infoJarakSpan.style.color = "#e53e3e";
+                            infoJarakSpan.innerText = "❌ Gagal melacak GPS. Tolong izinkan akses lokasi pada browser Anda.";
+                            btnSubmitForm.disabled = true;
                         }
                     );
                 } else {
@@ -248,19 +305,39 @@
                 }
             }
 
-            // Tombol Manual Ambil Ulang Koordinat GPS
+            // Fungsi Matematika Haversine Formula (Garis Lurus Bumi)
+            function calculateHaversine(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Jari-jari bumi dalam kilometer
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                
+                const a = 
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c;
+            }
+
+            // Tombol Manual Ambil Ulang Koordinat & Alamat GPS
             btnGetGps.addEventListener('click', function(e) {
                 e.preventDefault();
-                gpsAddressInput.value = "Memperbarui lokasi...";
+                gpsAddressInput.value = "Memperbarui koordinat & alamat...";
+                infoJarakSpan.innerText = "";
                 getRealtimeLocation();
             });
 
             // Validasi Tambahan Sebelum Form Dikirim ke Backend
             document.getElementById('orderForm').addEventListener('submit', function(e) {
                 if (isPickupInput.value === "1") {
-                    if (!gpsAddressInput.value.trim()) {
+                    if (!gpsAddressInput.value.trim() || inputJarakHidden.value == "0") {
                         e.preventDefault();
-                        alert("Harap isi alamat koordinat GPS kamu terlebih dahulu!");
+                        alert("Harap ambil lokasi koordinat GPS terlebih dahulu!");
+                        return;
+                    }
+                    if (parseFloat(inputJarakHidden.value) > BATAS_MAKSIMAL_KM) {
+                        e.preventDefault();
+                        alert("Pesanan ditolak! Lokasi Anda di luar batasan wilayah layanan kami.");
                         return;
                     }
                     if (!selectedPaymentInput.value) {
