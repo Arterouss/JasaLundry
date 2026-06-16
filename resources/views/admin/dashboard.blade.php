@@ -97,7 +97,7 @@
                 <h2>Kelola Pesanan</h2>
                 <p>Pantau dan perbarui antrean cucian pelanggan</p>
             </div>
-            <a href="{{ route('admin.orders.create') }}" class="btn-tambah">Tambah Pesanan</a>
+            <a href="{{ route('admin.orders.createWalkIn') }}" class="btn-tambah">Tambah Pesanan</a>
         </div>
 
         <div class="filters">
@@ -128,7 +128,11 @@
                                 {{ $order->weight ? number_format($order->weight, 1) . ' kg' : '-' }}
                             </td>
                             <td>
-                                {{ $order->total_price ? 'Rp ' . number_format($order->total_price, 0, ',', '.') : 'Belum Dihitung' }}
+                                @if($order->grand_total > 0)
+                                    Rp {{ number_format($order->grand_total, 0, ',', '.') }}
+                                @else
+                                    <span style="color: red; font-size: 11px;">Belum Dihitung</span>
+                                @endif
                             </td>
                             <td>
                                 <div class="status-container">

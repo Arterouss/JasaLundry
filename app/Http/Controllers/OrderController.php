@@ -8,9 +8,20 @@ use App\Models\Service;
 use App\Models\Perfume;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class OrderController extends Controller
 {
+    public function __construct()
+    {
+        // Konfigurasi Kunci Midtrans dari .env
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        Config::$isSanitized = env('MIDTRANS_IS_SANITIZED', true);
+        Config::$is3ds = env('MIDTRANS_IS_3DS', true);
+    }
+
     /**
      * 1. Menampilkan Halaman Form Order (Pelanggan)
      */
@@ -81,21 +92,26 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
+        // 1. Hitung-hitungan untuk widget statistik dashboard
         $totalPesanan = Order::query()->where('customer_id', $user->id)->count();
         
         $sedangProses = Order::query()->where('customer_id', $user->id)
-            ->where('status', '!=', 'selesai')
+            ->where('status', '!=', OrderStatus::SELESAI->value)
             ->count();
             
         $siapDiambil = Order::query()->where('customer_id', $user->id)
-            ->where('status', 'siap')
+            ->where('status', '=', OrderStatus::SIAP->value)
             ->count();
 
-        $latestOrder = Order::query()->where('customer_id', $user->id)
-            ->latest()
-            ->first();
+        // 2. Ambil SEMUA pesanan aktif (yang belum berstatus SELESAI)
+        $activeOrders = Order::with(['service', 'perfume'])
+            ->where('customer_id', $user->id)
+            ->where('status', '!=', OrderStatus::SELESAI)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('customer.dashboard', compact('user', 'totalPesanan', 'sedangProses', 'siapDiambil', 'latestOrder'));
+        // Kirim variabel $activeOrders ke view dashboard
+        return view('customer.dashboard', compact('user', 'totalPesanan', 'sedangProses', 'siapDiambil', 'activeOrders'));
     }
 
     /**
@@ -113,7 +129,6 @@ class OrderController extends Controller
 
         if ($statusFilter) {
             if ($statusFilter === 'menunggu') {
-                // Menunggu Pembayaran atau Baru Masuk Antrean Antar Jemput
                 $query->whereIn('status', [\App\Enums\OrderStatus::DITERIMA, \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN]);
             } elseif ($statusFilter === 'proses') {
                 $query->whereIn('status', [\App\Enums\OrderStatus::DIJEMPUT, \App\Enums\OrderStatus::DIPROSES]);
@@ -124,44 +139,77 @@ class OrderController extends Controller
             }
         }
 
-        // Ambil data dengan pagination (misal 5 data per halaman agar rapi)
+        // Ambil data dengan pagination
         $orders = $query->orderBy('created_at', 'desc')->paginate(5);
 
         return view('customer.riwayat', compact('user', 'orders'));
     }
 
     /**
-     * 4. Halaman Pembayaran (Khusus Cashless)
+     * 4. Halaman Pembayaran (Khusus Cashless) - Menampilkan Ringkasan
      */
     public function checkout(Order $order)
     {
-        if ($order->customer_id !== Auth::id() || 
-            $order->payment_method !== 'cashless' || 
-            $order->status !== OrderStatus::MENUNGGU_PEMBAYARAN) {
-            abort(403, 'Akses tidak sah atau pesanan belum siap dibayar.');
+        // Proteksi jika ternyata sudah lunas
+        if ($order->payment_status === 'paid') {
+            return redirect()->route('customer.dashboard')->with('success', 'Pesanan ini sudah lunas.');
         }
 
-        return view('customer.pembayaran', compact('order'));
+        // PERBAIKAN: Me-load ulang order beserta relasi 'service' agar datanya tidak null di Blade
+        $order->load(['service']);
+
+        $user = Auth::user(); 
+        return view('customer.pembayaran', compact('order', 'user'));
     }
 
     /**
-     * 5. Proses Menyelesaikan Pembayaran Cashless
+     * Menghasilkan Snap Token untuk dikirim ke Javascript di Blade via AJAX
      */
     public function processPayment(Order $order)
     {
-        if ($order->customer_id !== Auth::id() || $order->status !== OrderStatus::MENUNGGU_PEMBAYARAN) {
-            abort(403);
+        // Buat parameter transaksi Midtrans
+        $params = [
+            'transaction_details' => [
+                'order_id' => 'LDR-' . $order->id . '-' . time(), // Token unik penangkal duplicate transaction
+                'gross_amount' => (int) $order->grand_total,      // Menggunakan nominal akhir tagihan
+            ],
+            'item_details' => [
+                [
+                    'id' => $order->service_id,
+                    'price' => (int) ($order->service_cost ?? $order->grand_total),
+                    'quantity' => 1,
+                    'name' => $order->service->name ?? 'Layanan Laundry',
+                ]
+            ],
+            'customer_details' => [
+                'first_name' => Auth::user()->name ?? 'Pelanggan',
+            ],
+        ];
+
+        try {
+            // Ambil token dari Midtrans
+            $snapToken = Snap::getSnapToken($params);
+            
+            // Kembalikan dalam bentuk response JSON agar dibaca oleh fetch di JavaScript
+            return response()->json([
+                'status' => 'success',
+                'token' => $snapToken
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $order->update([
-            'payment_status' => 'paid',
-            'status' => OrderStatus::DIPROSES,
-        ]);
-
-        $order->statusLogs()->create([
-            'status' => OrderStatus::DIPROSES->value,
-        ]);
-
-        return redirect()->route('customer.dashboard')->with('success', 'Pembayaran berhasil! Cucianmu mulai diproses.');
     }
+    public function paymentSuccessRedirect(Order $order)
+        {
+            // 1. Ubah status pembayaran di database menjadi paid
+            $order->update([
+                'payment_status' => 'paid'
+            ]);
+
+            // 2. Alihkan kembali ke dashboard dengan pesan sukses
+            return redirect()->route('customer.dashboard')->with('success', 'Pembayaran Anda berhasil terkonfirmasi!');
+        }
 }

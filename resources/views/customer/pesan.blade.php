@@ -90,7 +90,7 @@
             </div>
         @endif
 
-        <form action="{{ route('customer.orders.store') }}" method="POST" id="orderForm">
+        <form action="{{ route('customer.store') }}" method="POST" id="orderForm">
             @csrf
             
             <input type="hidden" name="service_id" id="selected_service_id" value="1">

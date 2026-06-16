@@ -77,12 +77,12 @@
                 Beranda
             </a>
             
-            <a href="{{ route('customer.orders.history') }}" class="nav-item active">
+            <a href="{{ route('customer.history') }}" class="nav-item active">
                 <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                 Riwayat
             </a>
             
-            <a href="{{ route('customer.orders.create') }}" class="nav-item">
+            <a href="{{ route('customer.create') }}" class="nav-item">
                 <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2l.01-12c0-1.1-.89-2-1.99-2zM12 3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm0 10c-2.76 0-5-2.24-5-5h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 2.76-2.24 5-5 5z"/></svg>
                 Pesan
             </a>
@@ -119,11 +119,11 @@
             </div>
 
             <div class="filters">
-                <a href="{{ route('customer.orders.history') }}" class="filter-link {{ !request('status') ? 'active' : '' }}">Semua</a>
-                <a href="{{ route('customer.orders.history', ['status' => 'menunggu']) }}" class="filter-link {{ request('status') == 'menunggu' ? 'active' : '' }}">Menunggu</a>
-                <a href="{{ route('customer.orders.history', ['status' => 'proses']) }}" class="filter-link {{ request('status') == 'proses' ? 'active' : '' }}">Proses</a>
-                <a href="{{ route('customer.orders.history', ['status' => 'siap']) }}" class="filter-link {{ request('status') == 'siap' ? 'active' : '' }}">Siap</a>
-                <a href="{{ route('customer.orders.history', ['status' => 'diantar']) }}" class="filter-link {{ request('status') == 'diantar' ? 'active' : '' }}">Diantar</a>
+                <a href="{{ route('customer.history') }}" class="filter-link {{ !request('status') ? 'active' : '' }}">Semua</a>
+                <a href="{{ route('customer.history', ['status' => 'menunggu']) }}" class="filter-link {{ request('status') == 'menunggu' ? 'active' : '' }}">Menunggu</a>
+                <a href="{{ route('customer.history', ['status' => 'proses']) }}" class="filter-link {{ request('status') == 'proses' ? 'active' : '' }}">Proses</a>
+                <a href="{{ route('customer.history', ['status' => 'siap']) }}" class="filter-link {{ request('status') == 'siap' ? 'active' : '' }}">Siap</a>
+                <a href="{{ route('customer.history', ['status' => 'diantar']) }}" class="filter-link {{ request('status') == 'diantar' ? 'active' : '' }}">Diantar</a>
             </div>
 
             @forelse($orders as $order)
