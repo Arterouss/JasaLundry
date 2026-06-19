@@ -107,12 +107,11 @@
                         <div class="form-group">
                             <label for="weight">Input Berat Real (Kg)</label>
                             @php
-                                // Perbaikan Utama: Menggunakan readonly agar data tetap terkirim saat disubmit
-                                if ($order->is_pickup_delivery) {
-                                    $isWeightReadOnly = ($order->status->value !== 'pesanan_dijemput');
-                                } else {
-                                    $isWeightReadOnly = true; 
-                                }
+                                // Berat bisa diisi selama pesanan belum mulai diproses/dicuci.
+                                $currentVal = $order->status->value;
+                                $isWeightReadOnly = in_array($currentVal, [
+                                    'pesanan_diproses', 'pesanan_siap', 'pesanan_diantar', 'pesanan_selesai'
+                                ]);
                             @endphp
                             <input type="number" step="0.1" min="0.1" max="5" 
                                    name="weight" 
@@ -134,8 +133,8 @@
                         <div class="form-group">
                             <label for="distance_km">Input Jarak Pengiriman (Km)</label>
                             @php
-                                // Perbaikan Utama: Menggunakan readonly
-                                $isDistanceReadOnly = ($order->status->value !== 'pesanan_diterima' || !$order->is_pickup_delivery);
+                                // Jarak hanya bisa diisi untuk Antar Jemput saat status masih Diterima
+                                $isDistanceReadOnly = ($currentVal !== 'pesanan_diterima' || !$order->is_pickup_delivery);
                             @endphp
                             <input type="number" step="0.1" min="0.1" max="10" 
                                    name="distance_km" 
