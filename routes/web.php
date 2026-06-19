@@ -79,3 +79,16 @@ Route::get('/pembayaran/{order}/sukses-redirect', [CustomerPaymentController::cl
             })->name('orders.edit-view');
         });
 });
+
+// Rute sementara untuk membuat akun admin dengan cepat
+Route::get('/setup-admin', function () {
+    \App\Models\User::updateOrCreate(
+        ['email' => 'admin@gmail.com'],
+        [
+            'name' => 'Administrator Utama',
+            'password' => \Illuminate\Support\Facades\Hash::make('admin12345'),
+            'role' => 'admin'
+        ]
+    );
+    return 'Berhasil! Akun admin telah dibuat/diperbarui. Silakan login dengan Email: admin@gmail.com dan Password: admin12345';
+});
